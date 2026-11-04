@@ -487,8 +487,36 @@
       " In der Klausur rechnest du immer mit den Quartilen aus der Vorlesung.";
   }
 
+  // Wo liegt die Grenze nach n · p Werten?
+  // Ganze Zahl k → genau geschafft: Grenze in der Lücke zwischen Platz k und k + 1 (violette Linie).
+  // Kommazahl    → halbe Werte gibt es nicht: abzählen, ab welchem Platz die Mindestanzahl erreicht ist.
+  function cutPlace(info) {
+    var n = info.n, np = info.np;
+    if (!(n > 0) || !isFinite(np)) return null;
+    var need = npShow(np).replace("≈ ", "etwa "), share = pct(info.p);
+    var intro = "Mindestens " + share + " sollen links liegen, das sind " + (info.integer ? "genau " : "") + need + " von " + n + " Werten.";
+    if (info.integer) {
+      var k = info.k;
+      return {
+        pos: k, gap: true, rows: [],
+        text: intro + " Mit Platz " + k + " ist das genau geschafft. Die violette Linie zeigt die Grenze: Sie liegt in der Lücke zwischen Platz " +
+          k + " und " + (k + 1) + ".",
+        after: "Beide Nachbarn der Lücke passen, darum nimmst du ihr Mittel."
+      };
+    }
+    var c = Math.ceil(np - 1e-9);
+    function row(m, ok) {
+      return { upto: m, ok: ok, label: (m === 0 ? "ohne Karte" : "bis Platz " + m) + ": " + m + " " + (m === 1 ? "Wert" : "Werte") + " = " + pct(m / n) };
+    }
+    return {
+      pos: c, gap: false, rows: [row(c - 1, false), row(c, true)],
+      text: intro + " Halbe Werte gibt es nicht. Also zählst du ab:",
+      after: "Also ist Platz " + c + " das Quantil. Die Karte bleibt ganz, sie wird nicht geteilt."
+    };
+  }
+
   var core = {
-    RT_A8: RT_A8, FOLD_N: FOLD_N,
+    RT_A8: RT_A8, FOLD_N: FOLD_N, cutPlace: cutPlace,
     isThird: isThird, pName: pName, pShow: pShow, pSub: pSub, npShow: npShow, npTex: npTex, quantileAlias: quantileAlias,
     defCheck: defCheck, rNum: rNum, rProbArg: rProbArg, rProbName: rProbName, rVector: rVector, rCall: rCall, rResult: rResult,
     rQuantileLines: rQuantileLines, rAnswer: rAnswer, rBoxLines: rBoxLines,
@@ -890,6 +918,9 @@
     var cardsHost = LM.h("div", { class: "qx-cards" });
     var cards = LM.cards(cardsHost, { values: [], sorted: true });
     var sortNote = LM.h("p", { class: "qx-note" });
+    var cutLine = LM.h("span", { class: "qx-cut", attrs: { "aria-hidden": "true" } });
+    var countList = LM.h("ul", { class: "qx-count" });
+    var countAfter = LM.h("p", { class: "qx-note qx-count-after" });
     var npEl = LM.h("div", { class: "qx-np" });
     function branch(title, rule) {
       var badge = LM.h("span", { class: "qx-branch-badge" }), now = LM.h("p", { class: "qx-branch-now" });
@@ -903,7 +934,7 @@
     var resTex = LM.h("div", { class: "qx-res-tex" });
     var alias = LM.h("p", { class: "qx-note" });
     el.appendChild(LM.h("ol", { class: "steps qx-steps" }, [
-      stepLi("Sortieren", [cardsHost, sortNote]),
+      stepLi("Sortieren", [cardsHost, sortNote, countList, countAfter]),
       stepLi("n · p rechnen", [npEl]),
       stepLi("Fall bestimmen", [LM.h("div", { class: "qx-branches" }, [bA.el, bB.el])]),
       stepLi("Ergebnis", [LM.h("div", { class: "qx-result" }, [tile, resTex]), alias], "is-active")
@@ -974,8 +1005,11 @@
     }
 
     function markQ(info) {
+      if (cutLine.parentNode) cutLine.parentNode.removeChild(cutLine);
       if (st.sorting) { cards.clear(); return; }
       st.sig = markCards(cards, [{ pos: info.positions, cls: "is-q" }], st.sig);
+      var cut = cutPlace(info), host = cut && cut.gap && cards.item(cut.pos);
+      if (host) host.appendChild(cutLine);
     }
 
     function isAscending(xs) { return xs.every(function (v, i) { return i === 0 || xs[i - 1] <= v; }); }
@@ -1018,8 +1052,17 @@
         }
       }
       markQ(info);
-      sortNote.textContent = "n = " + n + " " + plural(n, "Wert", "Werte") + ", der Größe nach. Markiert: " +
-        (info.positions.length === 1 ? "Platz " + k : "Platz " + k + " und " + (k + 1)) + ".";
+      var cutInfo = cutPlace(info);
+      sortNote.textContent = "n = " + n + " " + plural(n, "Wert", "Werte") + ", der Größe nach. " + (cutInfo ? cutInfo.text : "");
+      countList.innerHTML = "";
+      (cutInfo ? cutInfo.rows : []).forEach(function (r) {
+        countList.appendChild(LM.h("li", { class: r.ok ? "is-ok" : "is-bad" }, [
+          LM.h("span", { class: "qx-count-lbl", text: r.label }),
+          LM.h("span", { class: "qx-count-verdict", text: r.ok ? "✓ reicht" : "✗ zu wenig" })
+        ]));
+      });
+      countList.hidden = !countList.children.length;
+      countAfter.textContent = cutInfo ? cutInfo.after : "";
 
       // 2 n · p
       npEl.innerHTML = '<span class="qx-tex-lg">' + LM.tex(npTex(n, p)) + "</span>" +

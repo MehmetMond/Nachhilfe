@@ -284,3 +284,31 @@
   .qx-pbox { padding: 0.75rem 0.8rem; }
   .qx-chips .chip { min-width: 2.8rem; padding: 0.25rem 0.6rem; }
 }
+
+/* Grenz-Linie: nur bei ganzer Zahl n · p, in der Lücke zwischen Platz k und k + 1 */
+.qx-cut {
+  position: absolute; top: -7px; bottom: -7px; width: 3px; margin-left: -1.5px; z-index: 2;
+  background: var(--c-q); border-radius: 2px; pointer-events: none;
+  box-shadow: 0 0 0 2px var(--surface);
+  transition: left 180ms ease;
+}
+.qx-cut::before {
+  content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--c-q); border-bottom: 0;
+}
+.qx-cut { left: calc(100% + 1.5px + 4px); }
+@media (prefers-reduced-motion: reduce) { .qx-cut { transition: none; } }
+
+/* Zählhilfe bei Kommazahl n · p: ab welchem Platz ist die Mindestanzahl erreicht? */
+.qx-count { list-style: none; margin: 0.15rem 0 0; padding: 0; display: grid; gap: 6px; max-width: 30rem; }
+.qx-count[hidden] { display: none; }
+.qx-count li {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 0.75rem;
+  padding: 0.4rem 0.75rem; border-radius: var(--r-sm); border: 1.5px solid var(--rule); background: var(--surface);
+  font-variant-numeric: tabular-nums;
+}
+.qx-count li.is-bad { border-style: dashed; color: var(--muted); }
+.qx-count li.is-ok { border-color: var(--c-q); background: var(--c-q-soft); color: var(--c-q-ink); }
+.qx-count-verdict { font-family: var(--font-display); font-weight: 700; white-space: nowrap; }
+.qx-count li.is-bad .qx-count-verdict { color: var(--bad); }
+.qx-count-after { font-weight: 600; }
