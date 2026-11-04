@@ -1,0 +1,226 @@
+/* =====================================================================
+   Bündel „mean“ (Präfix mn-): Wippe, Tabellen-Rechner, Ausreißer-Tauziehen,
+   Minimum-Kurven. Farben nur über die Variablen aus style.css, damit hell
+   und dunkel passen. Mittel = Rosé, Median = Türkis, Drehpunkt a = Akzent.
+   ===================================================================== */
+
+/* ---------- gemeinsam ---------- */
+
+.mn .mn-svg {
+  display: block; width: 100%; height: auto;
+  touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.mn-sr { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.mn-m, .mn-xbar { font-family: var(--font-math); font-size: 1.06em; white-space: nowrap; }
+.mn-ctl { gap: 0.6rem 1rem; }
+.mn-arow { display: flex; align-items: center; gap: 0.5rem; flex: 1 1 260px; min-width: 0; }
+.mn-arow .slider { flex: 1 1 auto; min-width: 0; }
+.mn-nudge { min-width: 40px; padding: 0.3rem 0.55rem; font-size: 0.8rem; }
+
+/* Pillen-Beschriftungen im SVG */
+.mn-tag rect { stroke-width: 1.5; }
+.mn-tag text { font-family: var(--font-display); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mn-tag-med rect { fill: var(--c-med-soft); stroke: var(--c-med); }
+.mn-tag-med text { fill: var(--c-med-ink); }
+.mn-tag-mean rect { fill: var(--c-mean-soft); stroke: var(--c-mean); }
+.mn-tag-mean text { fill: var(--c-mean-ink); }
+.mn-tag-a rect { fill: var(--accent-soft); stroke: var(--accent); }
+.mn-tag-a text { fill: var(--accent-text); }
+.mn-tickmark { stroke: var(--muted); stroke-width: 1; }
+
+/* kleine Symbole in Knöpfen und Notizen */
+.mn-tri-ico { display: inline-block; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid var(--c-mean); }
+.mn-line-ico { display: inline-block; width: 3px; height: 14px; border-radius: 2px; background: var(--c-med); }
+.mn-btn-mean { border-color: color-mix(in srgb, var(--c-mean) 55%, var(--rule)); }
+.mn-btn-med { border-color: color-mix(in srgb, var(--c-med) 55%, var(--rule)); }
+
+/* ---------- 1. Wippe ---------- */
+
+.mn-custom { display: grid; gap: 0.35rem; }
+.mn-custom-field { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.7rem; font-family: var(--font-display); font-weight: 650; font-size: 0.95rem; }
+.mn-custom-in { flex: 1 1 220px; min-width: 0; }
+.mn-custom-msg:empty { display: none; }
+
+.mn-floor { stroke: var(--rule); stroke-width: 2; stroke-linecap: round; }
+.mn-beam { fill: var(--surface-2); stroke: var(--ink-2); stroke-width: 1.5; transition: stroke 200ms ease; }
+.mn-rtick { stroke: var(--muted); stroke-width: 1; }
+.mn-rlbl { fill: var(--ink-2); font-family: var(--font-display); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mn-weight rect { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.5; transition: fill 180ms ease, stroke 180ms ease; }
+.mn-weight text { fill: var(--ink); font-family: var(--font-display); font-size: 12px; font-weight: 700; transition: fill 180ms ease; }
+.mn-weight.is-neg rect { fill: var(--accent-soft); stroke: var(--accent); }
+.mn-weight.is-neg text { fill: var(--accent-text); }
+.mn-weight.is-zero rect { stroke: var(--muted); stroke-dasharray: 4 3; }
+.mn-weight.is-zero text { fill: var(--muted); }
+.mn-wmore { fill: var(--muted); font-family: var(--font-display); font-size: 11px; font-weight: 700; }
+.mn-ful { cursor: grab; touch-action: none; outline: none; }
+.mn-ful.is-drag { cursor: grabbing; }
+.mn-hit { fill: transparent; }
+.mn-ful-tri { fill: var(--ink-2); stroke: var(--ink-2); stroke-width: 2; stroke-linejoin: round; transition: fill 220ms ease, stroke 220ms ease; }
+.mn-ful:hover .mn-ful-tri { stroke: var(--accent); }
+.mn-ful:focus-visible .mn-ful-tri { stroke: var(--accent); stroke-width: 5; }
+.mn-ful-pin { fill: var(--surface); stroke: var(--ink); stroke-width: 2; pointer-events: none; }
+.mn-albl { fill: var(--ink); font-family: var(--font-display); font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.mn-bal.is-bal .mn-ful-tri { fill: var(--c-mean); stroke: var(--c-mean); }
+.mn-bal.is-bal .mn-albl { fill: var(--c-mean-ink); }
+.mn-bal.is-bal .mn-beam { stroke: var(--ok); }
+
+.mn-status {
+  display: flex; align-items: center; gap: 0.6rem; min-height: 3rem; padding: 0.6rem 0.9rem;
+  border-radius: var(--r); border: 1.5px solid var(--rule); background: var(--surface-2); color: var(--ink-2);
+  font-family: var(--font-display); font-weight: 650; font-size: 0.98rem; line-height: 1.35;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+.mn-status .mn-dot { flex: none; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--muted); }
+.mn-bal.is-bal .mn-status { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); }
+.mn-bal.is-bal .mn-status .mn-dot { background: var(--ok); }
+.mn-status strong { color: var(--ok); }
+.mn-pop { animation: mn-pop 420ms ease; }
+@keyframes mn-pop { 0% { transform: scale(1); } 40% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+/* Abweichungen: links negativ (Akzentfarbe), rechts positiv (neutral) */
+.mn-dev { display: grid; gap: 0.55rem; }
+.mn-dev-title { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--ink-2); }
+.mn-dev-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.mn-dev-col { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.6rem 0.75rem; border-radius: var(--r); border: 1.5px solid var(--rule); background: var(--surface); min-width: 0; }
+.mn-dev-col.mn-neg { border-color: color-mix(in srgb, var(--accent) 50%, var(--rule)); background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface)); }
+.mn-dev-col.mn-pos { border-color: color-mix(in srgb, var(--ink-2) 35%, var(--rule)); background: var(--surface-2); }
+.mn-dev-h { font-family: var(--font-display); font-weight: 800; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.mn-dev-h i { text-transform: none; font-family: var(--font-math); font-size: 1.15em; letter-spacing: 0; }
+.mn-neg .mn-dev-h { color: var(--accent-text); }
+.mn-pos .mn-dev-h { color: var(--ink-2); text-align: right; }
+.mn-dev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.08rem; }
+.mn-dev-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4rem; font-family: var(--font-math); font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.mn-dev-calc { color: var(--muted); white-space: nowrap; }
+.mn-dev-res { font-weight: 600; white-space: nowrap; }
+.mn-neg .mn-dev-res { color: var(--accent-text); }
+.mn-pos .mn-dev-res { color: var(--ink); }
+.mn-dev-none { color: var(--muted); font-style: italic; font-size: 0.92rem; }
+.mn-dev-sub { margin-top: auto; display: flex; justify-content: space-between; align-items: baseline; gap: 0.4rem; border-top: 1px dashed var(--rule); padding-top: 0.3rem; font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; color: var(--ink-2); }
+.mn-dev-sub b { font-family: var(--font-math); font-size: 1.12rem; font-weight: 600; }
+.mn-neg .mn-dev-sub b { color: var(--accent-text); }
+.mn-dev-zero { font-size: 0.92rem; color: var(--muted); }
+.mn-dev-total {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.5rem; padding: 0.55rem 0.8rem;
+  border-radius: var(--r); border: 1.5px dashed var(--rule); font-family: var(--font-math); font-size: 1.1rem; font-variant-numeric: tabular-nums;
+}
+.mn-dev-total b { font-weight: 700; }
+.mn-dev-total.is-zero { border-style: solid; border-color: var(--ok); background: var(--ok-soft); }
+.mn-dev-total.is-zero b { color: var(--ok); }
+.mn-dev-ok { font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; color: var(--ok); }
+.mn-note { color: var(--ink-2); font-size: 0.95rem; padding-left: 0.85rem; border-left: 3px solid var(--c-mean); }
+
+/* ---------- 2. Tabellen-Rechner ---------- */
+
+.mn-tm-pane { display: grid; gap: 0.75rem; min-width: 0; }
+.mn-tm-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; }
+.mn-tm-pick-lbl { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--muted); }
+.mn-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.mn-nb { display: inline-block; white-space: nowrap; }
+.mn-tm-ctx { color: var(--ink-2); font-size: 0.95rem; }
+.mn-tm-wrap { width: fit-content; max-width: 100%; }
+.mn .mn-tm-t th, .mn .mn-tm-t td { padding: 0.4rem 0.7rem; }
+.mn .mn-tm-t td.num { min-width: 4.2rem; }
+.mn-tm-t thead th.mn-th { vertical-align: bottom; line-height: 1.25; }
+.mn-th-w { display: block; font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.mn-tm-t thead .katex { font-size: 1.02rem; color: var(--ink); }
+.mn-wide { white-space: nowrap; }
+.mn .mn-tm-t tfoot th, .mn .mn-tm-t tfoot td { border-top: 2px solid var(--rule); background: var(--surface-2); font-weight: 700; }
+.mn-tm-t td.mn-sum { white-space: nowrap; }
+.mn .mn-in { width: 4.6rem; padding: 0.28rem 0.4rem; font-size: 1rem; text-align: center; }
+.mn .mn-in.mn-in-sm { width: 3.6rem; }
+.mn .mn-in.mn-in-u { width: 4rem; }
+.mn-del-cell { width: 1%; text-align: center; }
+.mn-del { min-width: 34px; padding: 0.2rem 0.5rem; font-size: 1.1rem; color: var(--muted); }
+.mn-del:not([disabled]):hover { color: var(--bad); border-color: var(--bad); }
+.mn-cls { display: inline-flex; align-items: center; gap: 0.15rem; white-space: nowrap; font-family: var(--font-math); font-size: 1.05rem; }
+.mn-cls-low { display: inline-block; min-width: 2.6rem; text-align: center; font-variant-numeric: tabular-nums; }
+.mn-br { color: var(--muted); }
+.mn-tm-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mn-tm-msg:empty { display: none; }
+.mn-tm-mid { color: var(--muted); }
+.mn-tm-mid:empty { display: none; }
+.mn-tm-res { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.8rem 1rem; align-items: center; padding: 0.85rem 1rem; border-radius: var(--r); background: var(--surface-2); border: 1px solid var(--rule); transition: opacity 160ms ease; }
+.mn-tm-res.is-off { opacity: 0.45; }
+.mn-tm-lines { display: grid; gap: 0.3rem; min-width: 0; }
+.mn-tm-cap { font-size: 0.88rem; color: var(--muted); }
+.mn-tm-line { font-size: 1.02rem; line-height: 1.9; overflow-wrap: anywhere; }
+.mn-tm-line + .mn-tm-cap { margin-top: 0.35rem; }
+.mn-tm-stat { min-width: 9.5rem; text-align: center; }
+.mn-tm-stat .stat-value { font-size: 1.9rem; }
+.mn-tm-why { gap: 0.35rem; }
+.mn-tm-true:empty { display: none; }
+@media (max-width: 560px) {
+  .mn-tm-res { grid-template-columns: minmax(0, 1fr); padding: 0.75rem; }
+  .mn-tm-stat { min-width: 0; }
+  .mn .mn-tm-t th, .mn .mn-tm-t td { padding: 0.32rem 0.3rem; }
+  .mn .mn-tm-t th:first-child, .mn .mn-tm-t td:first-child { padding-left: 0.55rem; }
+  .mn .mn-tm-t td.num { min-width: 0; }
+  .mn-wide { display: none; }
+  .mn .mn-in { width: 3.4rem; }
+  .mn .mn-in.mn-in-sm { width: 2.9rem; }
+  .mn .mn-in.mn-in-u { width: 3rem; }
+  .mn-del { padding: 0.2rem 0.3rem; }
+}
+@media (max-width: 400px) {
+  .mn .mn-in.mn-in-u { width: 2.8rem; }
+  .mn-cls { gap: 0.05rem; }
+}
+
+/* ---------- 3. Ausreißer-Tauziehen ---------- */
+
+.mn-arrow { fill: var(--muted); }
+.mn-pt { cursor: grab; touch-action: none; outline: none; }
+.mn-pt.is-drag { cursor: grabbing; }
+.mn-pt-body { fill: var(--surface); stroke: var(--ink-2); stroke-width: 2; transition: stroke 120ms ease, fill 120ms ease; }
+.mn-pt-txt { fill: var(--ink); font-family: var(--font-display); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; pointer-events: none; }
+.mn-pt-ring { fill: none; stroke: transparent; stroke-width: 3; }
+.mn-pt-hit { fill: transparent; }
+.mn-pt:hover .mn-pt-body { stroke: var(--accent); }
+.mn-pt.is-drag .mn-pt-body { stroke: var(--accent); fill: var(--accent-soft); }
+.mn-pt:focus-visible .mn-pt-ring { stroke: var(--accent); }
+.mn-line-med { stroke: var(--c-med); stroke-width: 2.5; }
+.mn-line-mean { stroke: var(--c-mean); stroke-width: 2.5; stroke-dasharray: 6 4; }
+.mn-tug-live { font-family: var(--font-display); font-weight: 650; font-size: 1rem; padding: 0.6rem 0.9rem; border-radius: var(--r); background: var(--surface-2); border: 1.5px solid var(--rule); min-height: 2.9rem; }
+.mn-tug-table { width: fit-content; max-width: 100%; }
+.mn-tug-table table.t td, .mn-tug-table table.t th { padding: 0.45rem 0.8rem; }
+.mn-tug-table thead th.mn-r { text-align: right; }
+.mn-shift { font-weight: 700; }
+
+/* ---------- 4. Minimum-Kurven ---------- */
+
+.mn-mc-data { color: var(--ink-2); font-size: 0.95rem; }
+.mn-mc-charts { display: grid; gap: 0.75rem; min-width: 0; }
+.mn-mc-block { display: grid; gap: 0.35rem; min-width: 0; padding: 0.75rem 0.85rem 0.65rem; border-radius: var(--r); border: 1.5px solid var(--rule); transition: border-color 200ms ease; }
+.mn-mc-f.is-min { border-color: var(--c-med); }
+.mn-mc-g.is-min { border-color: var(--c-mean); }
+.mn-mc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
+.mn-mc-title { font-family: var(--font-display); font-weight: 750; font-size: 1rem; }
+.mn-mc-val { font-family: var(--font-math); font-size: 1.15rem; font-variant-numeric: tabular-nums; font-weight: 600; }
+.mn-okbadge {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.78rem; padding: 0.12rem 0.55rem; border-radius: 99px;
+  background: var(--ok-soft); color: var(--ok); border: 1.5px solid var(--ok); visibility: hidden; opacity: 0; transform: translateY(2px);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 0s linear 160ms;
+}
+.mn-okbadge.is-on { visibility: visible; opacity: 1; transform: none; transition: opacity 160ms ease, transform 160ms ease; }
+.mn-mc-note { font-size: 0.93rem; color: var(--ink-2); }
+.mn-mc-note:empty { display: none; }
+.mn-key { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; margin-right: 0.45rem; vertical-align: 0.05em; }
+.mn-key-med { background: var(--c-med); }
+.mn-key-mean { background: var(--c-mean); }
+.mn-curve { fill: none; stroke: var(--ink-2); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.mn-flat { stroke: var(--c-med); stroke-width: 7; stroke-linecap: round; opacity: 0.9; }
+.mn-flatzone { fill: var(--c-med-soft); opacity: 0.85; }
+.mn-mindot { stroke: var(--surface); stroke-width: 2; }
+.mn-dtick { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.mn-aline { stroke: var(--accent); stroke-width: 2; }
+.mn-adot { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
+.mn-hitbox { fill: transparent; cursor: ew-resize; }
+.mn-ghost { fill: var(--surface); stroke: var(--c-mean); stroke-width: 1.5; stroke-dasharray: 3 2; }
+.mn-ghost-arrow { fill: none; stroke: var(--c-mean); stroke-width: 1.5; }
+.mn-ghost-head { fill: var(--c-mean); }
+.mn-jump { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+@media (max-width: 560px) {
+  .mn-mc-block { padding: 0.6rem 0.55rem 0.5rem; }
+  .mn-dev-col { padding: 0.5rem 0.55rem; }
+  .mn-dev-list li { font-size: 0.95rem; }
+}

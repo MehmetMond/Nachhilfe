@@ -1,0 +1,286 @@
+/* =====================================================================
+   Bündel „quantile“: quantile-explorer (Kapitel 4) und boxplot-builder (Kapitel 5)
+   Alle Klassen mit Präfix qx-. Farben nur über die Variablen aus style.css:
+   Quantile/Boxplot = --c-q (violett), Median = --c-med (türkis).
+   ===================================================================== */
+
+/* ---------- Allgemein ---------- */
+
+.qx-sr {
+  position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.qx-label {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.76rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
+.qx-sec-title {
+  font-family: var(--font-display); font-weight: 800; font-size: 0.8rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
+.qx-note { font-size: 0.92rem; color: var(--muted); }
+.qx-mono { font-family: var(--font-mono); font-size: 0.88rem; }
+.qx .katex { font-size: 1.05em; }
+.qx-pane { display: grid; gap: 1rem; min-width: 0; }
+.qx-block { display: grid; gap: 0.5rem; min-width: 0; }
+.qx-own { display: grid; gap: 0.35rem; }
+.qx-parse { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+.qx-parse.is-bad { color: var(--bad); }
+.qx-bump { animation: qx-bump 380ms ease; }
+@keyframes qx-bump { 40% { transform: scale(1.05); } }
+
+/* ---------- p-Regler ---------- */
+
+.qx-pbox {
+  display: grid; gap: 0.6rem; padding: 0.85rem 1rem; border-radius: var(--r);
+  background: color-mix(in srgb, var(--c-q-soft) 55%, var(--surface));
+  border: 1.5px solid color-mix(in srgb, var(--c-q) 28%, var(--rule));
+}
+.qx-phead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.7rem; }
+.qx-pval { font-family: var(--font-math); font-size: 1.75rem; line-height: 1.1; color: var(--c-q-ink); font-variant-numeric: tabular-nums; }
+.qx-ppct { color: var(--muted); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.qx-slide { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.6rem; }
+.qx-pm { min-width: 40px; font-size: 1.2rem; font-family: var(--font-math); padding: 0.2rem 0.6rem; }
+.qx-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.qx-chips .chip { font-family: var(--font-math); font-size: 1rem; min-width: 3.1rem; justify-content: center; }
+.qx-chips .chip[aria-pressed="true"] { background: var(--c-q); border-color: var(--c-q); color: var(--surface); }
+.qx input[type="range"].qx-range::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--c-q) var(--qx-fill, 0%), var(--surface) var(--qx-fill, 0%));
+}
+.qx input[type="range"].qx-range::-moz-range-track {
+  background: linear-gradient(to right, var(--c-q) var(--qx-fill, 0%), var(--surface) var(--qx-fill, 0%));
+}
+.qx input[type="range"].qx-range::-webkit-slider-thumb { background: var(--c-q); }
+.qx input[type="range"].qx-range::-moz-range-thumb { background: var(--c-q); }
+
+/* ---------- Rechenweg (Schritte) ---------- */
+
+.qx-steps > li.is-active::before { background: var(--c-q); border-color: var(--c-q); color: var(--surface); }
+.qx-stepbody { display: grid; gap: 0.5rem; min-width: 0; padding-top: 0.15rem; }
+.qx-steptitle { font-size: 1rem; line-height: 1.6rem; }
+.qx-cards { min-width: 0; }
+.qx-np { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
+.qx-tex-lg .katex { font-size: 1.3em; }
+.qx-pill {
+  display: inline-flex; align-items: center; padding: 0.12rem 0.6rem; border-radius: 99px;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.82rem;
+  border: 1.5px solid var(--c-q); color: var(--c-q-ink); background: var(--c-q-soft);
+}
+
+/* zwei Fälle nebeneinander, der aktive leuchtet */
+.qx-branches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.qx-branch {
+  display: grid; gap: 0.2rem; align-content: start; padding: 0.7rem 0.85rem; min-width: 0;
+  border-radius: var(--r); border: 1.5px dashed var(--rule); background: var(--surface);
+  transition: border-color 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
+}
+.qx-branch.is-on {
+  border-style: solid; border-color: var(--c-q); background: var(--c-q-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-q) 16%, transparent);
+}
+/* inaktiver Fall: gestrichelt und gedämpft, aber gut lesbar (kein opacity, Text bleibt über 4,5 : 1) */
+.qx-branch.is-off { border-color: color-mix(in srgb, var(--muted) 45%, var(--rule)); }
+.qx-branch.is-off .qx-branch-title, .qx-branch.is-off .qx-branch-rule { color: var(--muted); }
+.qx-branch-badge {
+  justify-self: start; margin-bottom: 0.15rem; padding: 0.08rem 0.5rem; border-radius: 99px;
+  font-family: var(--font-display); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--surface-2); color: var(--muted);
+}
+.qx-branch.is-on .qx-branch-badge { background: var(--c-q); color: var(--surface); }
+.qx-branch-title { font-family: var(--font-display); font-weight: 800; font-size: 1.02rem; }
+.qx-branch-rule { color: var(--ink-2); font-size: 0.95rem; }
+.qx-branch-now { font-family: var(--font-display); font-weight: 700; color: var(--c-q-ink); margin-top: 0.15rem; }
+.qx-branch.is-off .qx-branch-now { color: var(--muted); font-weight: 600; font-size: 0.92rem; }
+
+/* Ergebnis */
+.qx-result { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.1rem; }
+.qx-res-tile { min-width: 10.5rem; }
+.qx-res-tile .stat-label .katex { font-size: 1em; }
+.qx-res-tile .stat-value { font-size: 2rem; }
+.qx-res-tex { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.4rem; min-width: 0; }
+
+/* ---------- Probe und R ---------- */
+
+.qx-extras { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 0.9rem; align-items: start; }
+.qx-panel {
+  display: grid; gap: 0.65rem; min-width: 0; padding: 0.9rem 1rem;
+  border-radius: var(--r); border: 1.5px solid var(--rule); background: var(--surface);
+}
+.qx-rule { font-size: 0.93rem; color: var(--ink-2); }
+.qx-rule .katex { font-size: 1em; }
+
+/* zwei Reihen Kästchen: oben „≤ Ergebnis“ (von links), unten „≥ Ergebnis“ (von rechts) */
+.qx-strip {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 26px 26px auto;
+  column-gap: 0.6rem; row-gap: 6px; padding-top: 6px;
+}
+.qx-strip-lbl {
+  grid-column: 1; display: flex; align-items: center; justify-content: flex-end;
+  font-family: var(--font-math); font-size: 0.98rem; white-space: nowrap; color: var(--c-q-ink); font-variant-numeric: tabular-nums;
+}
+.qx-r1 { grid-row: 1; }
+.qx-r2 { grid-row: 2; }
+.qx-cells-wrap { grid-column: 2; grid-row: 1 / 3; position: relative; display: grid; grid-template-rows: 26px 26px; row-gap: 6px; min-width: 0; }
+.qx-cells { display: flex; gap: 2px; min-width: 0; }
+.qx-cell {
+  flex: 1 1 0; min-width: 0; overflow: hidden; display: grid; place-items: center;
+  border-radius: 5px; background: var(--surface-2); border: 1px solid var(--rule);
+  font-family: var(--font-math); font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+.qx-cell.is-in { background: var(--c-q); border-color: var(--c-q); color: var(--surface); }
+.qx-cell.is-pick { box-shadow: inset 0 0 0 2px var(--c-q-ink); }
+.qx-cell.is-in.is-pick { box-shadow: inset 0 0 0 2px var(--surface); }
+/* die Zahl liegt über der p-Linie (auf einem kleinen Fleck in Kästchenfarbe) */
+.qx-cv { position: relative; z-index: 2; padding: 0 3px; border-radius: 4px; line-height: 1.25; background: inherit; }
+.qx-strip.is-tight .qx-cv { display: none; }
+.qx-pmark {
+  position: absolute; z-index: 1; top: -6px; bottom: -6px; width: 0; margin-left: -1.25px;
+  border-left: 2.5px solid var(--ink); border-radius: 2px; pointer-events: none;
+  transition: left 200ms ease;
+}
+.qx-pmark-row { grid-column: 2; grid-row: 3; position: relative; height: 1.5rem; }
+.qx-pmark-txt {
+  position: absolute; top: 4px; white-space: nowrap;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; color: var(--ink);
+  transition: left 200ms ease;
+}
+.qx-def-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.qx-def-list li { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 0.5rem; align-items: start; font-size: 0.95rem; }
+.qx-ok {
+  display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  background: var(--ok-soft); color: var(--ok); font-weight: 800; font-size: 0.9rem;
+}
+.qx-ok.is-no { background: var(--bad-soft); color: var(--bad); }
+
+.qx-code {
+  margin: 0; padding: 0.65rem 0.8rem; border-radius: var(--r-sm);
+  background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.5;
+  font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+/* eine R-Zeile pro Block; bricht sie um, rückt der Rest ein */
+.qx-ln { display: block; padding-left: 2ch; text-indent: -2ch; }
+.qx-mono, .qx code { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }
+.qx-rout { color: var(--c-q-ink); font-weight: 700; }
+.qx-rout.is-bad { color: var(--bad); }
+.qx-rcmt { color: var(--muted); font-style: italic; }
+.qx-recho { color: var(--muted); }
+
+/* „Was R antwortet“ zum Aufklappen */
+.qx-rans { border-radius: var(--r-sm); border: 1px solid var(--rule); background: var(--surface); }
+.qx-rans-sum {
+  display: flex; align-items: center; gap: 0.5rem; min-height: 38px; padding: 0.35rem 0.75rem; cursor: pointer;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--ink-2);
+  list-style: none; border-radius: var(--r-sm);
+}
+.qx-rans-sum::-webkit-details-marker { display: none; }
+.qx-rans-sum::before {
+  content: ""; width: 0.45rem; height: 0.45rem; flex: none; margin-right: 0.1rem;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg);
+  transition: transform 160ms ease;
+}
+.qx-rans[open] > .qx-rans-sum::before { transform: rotate(45deg); }
+.qx-rans-sum:hover { color: var(--ink); }
+.qx-rans > .qx-code { margin: 0 0.5rem 0.5rem; }
+.qx-warn { padding: 0.55rem 0.75rem; border-radius: var(--r-sm); font-size: 0.93rem; border: 1.5px solid var(--rule); }
+.qx-warn.is-bad { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
+.qx-warn.is-same { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+
+/* ---------- Boxplot-Werkstatt ---------- */
+
+.qx-legend-cards { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+.qx-legend-cards .tag { font-size: 0.8rem; }
+.qx-blockhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.8rem; min-height: 34px; }
+
+/* viele Werte: nur die gebrauchten Plätze, dazwischen „…“ */
+.qx-foldable .ncard.qx-far { display: none; }
+.qx-foldable .ncard.qx-gap { margin-left: 1.35rem; }
+.qx-foldable .ncard.qx-gap::before {
+  content: "…"; position: absolute; left: -1.3rem; top: 50%; width: 1.3rem; transform: translateY(-50%);
+  text-align: center; font-family: var(--font-math); font-size: 1.15rem; line-height: 1; color: var(--muted);
+}
+
+.qx-five { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 0.55rem; }
+.qx-tile { align-content: start; gap: 0.15rem; min-width: 0; }
+.qx-tile .stat-value { font-size: 1.55rem; }
+.qx-how { font-size: 0.84rem; line-height: 1.45; color: var(--ink-2); }
+.qx-how .katex { font-size: 1em; }
+
+.qx-rangebar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+.qx-rangehead { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
+.qx-rangepick { display: inline-flex; align-items: center; gap: 0.45rem; }
+.qx-rangeeq { background: none; border: 0; padding: 0; color: var(--ink-2); }
+.qx-rangebar .seg button { min-width: 3rem; }
+.qx-rangebar .qx-code { flex: 1 1 19rem; min-width: 0; }
+.qx-code-sm { font-size: 0.8rem; padding: 0.5rem 0.75rem; }
+.qx-slide-note { font-size: 0.93rem; color: var(--ink-2); padding: 0.45rem 0.75rem; border-radius: var(--r-sm); background: var(--c-q-soft); border-left: 3px solid var(--c-q); }
+
+.qx-chart { min-width: 0; }
+.qx-svg { width: 100%; height: auto; }
+.qx-svg .lbl { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.qx-lead { stroke: var(--muted); stroke-width: 1; }
+.qx-medline { stroke: var(--c-med); stroke-width: 3.5; stroke-linecap: round; }
+.qx-fence { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.qx-guide { stroke-width: 1.25; opacity: 0.55; }
+.qx-guide-q { stroke: var(--c-q); stroke-dasharray: 3 3; }
+.qx-guide-med { stroke: var(--c-med); }
+.qx-lbl-muted { fill: var(--muted); }
+.qx-lbl-ink { fill: var(--ink-2); }
+.qx-lblbg { fill: var(--surface); }
+.qx-ghost { fill: none; stroke: var(--bad); stroke-width: 2; stroke-dasharray: 6 4; stroke-linecap: round; }
+.qx-ghost-g { opacity: 0.6; }
+.qx-fade { animation: qx-fade 360ms ease both; }
+@keyframes qx-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.qx-legend { display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; font-family: var(--font-display); font-weight: 600; font-size: 0.86rem; color: var(--muted); }
+.qx-key { display: inline-flex; align-items: center; gap: 0.4rem; }
+.qx-sw { display: inline-block; flex: none; }
+.qx-sw-box { width: 22px; height: 12px; border-radius: 3px; background: var(--c-q-soft); border: 2px solid var(--c-q); }
+.qx-sw-med { width: 4px; height: 16px; border-radius: 2px; background: var(--c-med); }
+.qx-sw-wh { width: 20px; height: 2px; border-radius: 1px; background: var(--muted); }
+.qx-sw-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink-2); }
+.qx-sw-out { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--c-q); background: var(--surface); }
+.qx-sw-fence { width: 0; height: 16px; border-left: 2px dashed var(--muted); }
+.qx-sw-ghost { width: 22px; height: 12px; border-radius: 3px; border: 2px dashed var(--bad); opacity: 0.7; }
+
+.qx-expl { min-width: 0; }
+.qx-list { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; font-size: 0.96rem; }
+.qx-list .katex { font-size: 1em; }
+.qx-hinge { font-size: 0.94rem; }
+
+/* Selbst bauen */
+.qx-task { font-size: 1rem; }
+.qx-five-in { display: grid; grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); gap: 0.6rem; }
+.qx-in { display: grid; gap: 0.25rem; min-width: 0; }
+.qx-in-name { font-family: var(--font-display); font-weight: 700; font-size: 0.86rem; color: var(--ink-2); }
+.qx-in .num-input { width: 100%; min-height: 42px; }
+.qx-score { margin-left: auto; font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; color: var(--muted); }
+.qx-hints { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.qx-hints:empty { display: none; }
+.qx-hints li { padding: 0.5rem 0.75rem; border-radius: var(--r-sm); background: var(--bad-soft); border-left: 3px solid var(--bad); font-size: 0.94rem; }
+.qx-hints li.is-tip { background: var(--accent-soft); border-left-color: var(--accent); }
+.qx-after { display: grid; gap: 0.5rem; min-width: 0; }
+.qx-solution { gap: 0.6rem; }
+
+@media (max-width: 640px) {
+  /* Auswahlknöpfe füllen jede Zeile gleichmäßig, statt ausgefranst umzubrechen */
+  .qx > .w-controls > .seg, .qx-pane > .w-controls > .seg { display: flex; flex: 1 1 100%; }
+  .qx > .w-controls > .seg button, .qx-pane > .w-controls > .seg button { flex: 1 1 auto; }
+  .qx-code { font-size: 0.78rem; }
+  .qx-branches { grid-template-columns: minmax(0, 1fr); }
+  .qx-pval { font-size: 1.55rem; }
+  .qx-res-tile .stat-value { font-size: 1.75rem; }
+}
+@media (max-width: 480px) {
+  /* auf dem Handy keine Kästen in Kästen: Probe und R werden flache Abschnitte mit Trennlinie */
+  .qx-extras { gap: 1.1rem; }
+  .qx-panel { padding: 1rem 0 0; border: 0; border-top: 1.5px solid var(--rule); border-radius: 0; background: none; }
+  .qx-code { padding: 0.5rem 0.6rem; }
+  .qx-rans > .qx-code { margin: 0 0.35rem 0.35rem; }
+}
+@media (max-width: 400px) {
+  .qx-pbox { padding: 0.75rem 0.8rem; }
+  .qx-chips .chip { min-width: 2.8rem; padding: 0.25rem 0.6rem; }
+}

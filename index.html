@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="de" data-version="uebungen">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lagemaße üben: nur die interaktiven Übungen</title>
+<meta name="description" content="Interaktive Lernseite zu den Lagemaßen aus Statistik 1: Modus, Median, Quantile, Boxplot, arithmetisches, getrimmtes, geometrisches und harmonisches Mittel, Schiefe und Übungsblatt 3. Mit Spielplatz, Übungsgenerator und Karteikarten.">
+<meta name="theme-color" content="#f6f5f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317181c'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-style='italic' font-size='36' text-anchor='middle' fill='%235eead4'%3Ex%CC%83%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/widgets/basics.css">
+<link rel="stylesheet" href="css/widgets/quantile.css">
+<link rel="stylesheet" href="css/widgets/mean.css">
+<link rel="stylesheet" href="css/widgets/more.css">
+<link rel="stylesheet" href="css/widgets/shape.css">
+<link rel="stylesheet" href="css/widgets/uebung.css">
+<link rel="stylesheet" href="css/widgets/playground.css">
+<link rel="stylesheet" href="css/widgets/trainer.css">
+<link rel="stylesheet" href="css/widgets/quiz.css">
+<script>
+  /* Theme vor dem ersten Zeichnen setzen, damit nichts aufblitzt */
+  try { var t = JSON.parse(localStorage.getItem("lagemasse:theme")); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="js/stats.js"></script>
+<script defer src="js/app.js"></script>
+<script defer src="js/widgets/basics.js"></script>
+<script defer src="js/widgets/quantile.js"></script>
+<script defer src="js/widgets/mean.js"></script>
+<script defer src="js/widgets/more.js"></script>
+<script defer src="js/widgets/shape.js"></script>
+<script defer src="js/widgets/uebung.js"></script>
+<script defer src="js/widgets/playground.js"></script>
+<script defer src="js/widgets/trainer.js"></script>
+<script defer src="js/widgets/quiz.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="topbar">
+  <a class="brand" href="#start" aria-label="Lagemaße, zum Anfang">
+    <span class="brand-mark" aria-hidden="true">x̃</span>
+    <span class="brand-name">Lagemaße</span>
+  </a>
+  <span class="spacer"></span>
+  <a class="progress-pill" href="#karten" title="Fortschritt: Ziele in Trainer, Karteikarten und Abschlussquiz">
+    <span class="ring" data-progress-ring aria-hidden="true"></span>
+    <span><span class="pill-label">Fortschritt </span><span data-progress-count>0/0</span></span>
+  </a>
+  <button class="icon-btn" id="theme-btn" type="button" aria-label="Dunkles Design einschalten" aria-pressed="false">
+    <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+  <button class="icon-btn" id="menu-btn" type="button" aria-label="Inhaltsverzeichnis" aria-expanded="false" aria-controls="toc">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Inhalt">
+    <p class="eyebrow">Übungen</p>
+    <ol>
+      <li><a href="#idee"><span class="no"><span>1</span></span>Die Idee</a></li>
+      <li><a href="#modus"><span class="no"><span>2</span></span>Modus</a></li>
+      <li><a href="#median"><span class="no"><span>3</span></span>Median</a></li>
+      <li><a href="#quantile"><span class="no"><span>4</span></span>Quantile</a></li>
+      <li><a href="#boxplot"><span class="no"><span>5</span></span>Boxplot</a></li>
+      <li><a href="#mittel"><span class="no"><span>6</span></span>Arithmetisches Mittel</a></li>
+      <li><a href="#weitere"><span class="no"><span>7</span></span>Weitere Mittelwerte</a></li>
+      <li><a href="#minimum"><span class="no"><span>8</span></span>Minimumeigenschaften</a></li>
+      <li><a href="#schiefe"><span class="no"><span>9</span></span>Schiefe</a></li>
+      <li><a href="#wahl"><span class="no"><span>10</span></span>Skalenniveau</a></li>
+      <li><a href="#uebung3"><span class="no"><span>11</span></span>Übungsblatt 3</a></li>
+      <li><a href="#spielplatz"><span class="no"><span>12</span></span>Spielplatz</a></li>
+      <li><a href="#trainer"><span class="no"><span>13</span></span>Trainer</a></li>
+      <li><a href="#karten"><span class="no"><span>14</span></span>Karteikarten &amp; Quiz</a></li>
+    </ol>
+  </nav>
+
+  <main class="content" id="inhalt">
+
+    <!-- ================================================================ START -->
+    <section class="hero" id="start">
+      <div class="hero-text">
+        <p class="eyebrow">Statistik 1 · Lagemaße · nur die Übungen</p>
+        <h1>Lagemaße <span class="mark">üben</span></h1>
+        <p class="lead">Interaktive Übungen zu Modus, Median, Quantilen, Boxplot, Mittelwerten und Schiefe. Probier alles aus: Werte verschieben, Regler ziehen, selbst rechnen.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#modus">Los geht’s <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="btn" href="#uebung3">Übungsblatt 3</a>
+          <a class="btn" href="#trainer">Trainer</a>
+        </div>
+      </div>
+      <div data-widget="hero-demo"></div>
+    </section>
+
+    <!-- ================================================================ 1 IDEE -->
+    <section class="chapter" id="idee">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>1</b> Die Idee</span>
+        <h2>Viele Werte, eine Zahl</h2>
+      </div>
+      <div data-widget="sorter"></div>
+    </section>
+
+    <!-- ================================================================ 2 MODUS -->
+    <section class="chapter" id="modus">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>2</b> <span class="t-mod">Modus</span></span>
+        <h2>Der häufigste Wert</h2>
+      </div>
+      <div data-widget="mode-bars"></div>
+      <div data-widget="mini-quiz" data-set="modus"></div>
+    </section>
+
+    <!-- ================================================================ 3 MEDIAN -->
+    <section class="chapter" id="median">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>3</b> <span class="t-med">Median</span></span>
+        <h2>Der Wert in der Mitte</h2>
+      </div>
+      <div data-widget="median-stepper"></div>
+      <div data-widget="mini-quiz" data-set="median"></div>
+    </section>
+
+    <!-- ================================================================ 4 QUANTILE -->
+    <section class="chapter" id="quantile">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>4</b> <span class="t-q">Quantile</span></span>
+        <h2>Der Median ist nur ein Spezialfall</h2>
+      </div>
+      <div data-widget="quantile-explorer"></div>
+      <div data-widget="mini-quiz" data-set="quantile"></div>
+    </section>
+
+    <!-- ================================================================ 5 BOXPLOT -->
+    <section class="chapter" id="boxplot">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>5</b> <span class="t-q">Boxplot</span></span>
+        <h2>Fünf Zahlen auf einen Blick</h2>
+      </div>
+      <div data-widget="boxplot-builder"></div>
+      <div data-widget="mini-quiz" data-set="boxplot"></div>
+    </section>
+
+    <!-- ================================================================ 6 MITTEL -->
+    <section class="chapter" id="mittel">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>6</b> <span class="t-mean">Arithmetisches Mittel</span></span>
+        <h2>Der Durchschnitt und sein Schwerpunkt</h2>
+      </div>
+      <div data-widget="balance"></div>
+      <div data-widget="table-mean"></div>
+      <div data-widget="outlier-tug"></div>
+      <div data-widget="lin-trans"></div>
+      <div data-widget="mini-quiz" data-set="mittel"></div>
+    </section>
+
+    <!-- ================================================================ 7 WEITERE MITTELWERTE -->
+    <section class="chapter" id="weitere">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>7</b> <span class="t-mean">Weitere Mittelwerte</span></span>
+        <h2>Getrimmt, geometrisch, harmonisch</h2>
+      </div>
+      <div data-widget="trim-mean"></div>
+      <div data-widget="geo-mean"></div>
+      <div data-widget="harm-mean"></div>
+      <div data-widget="mini-quiz" data-set="weitere"></div>
+    </section>
+
+    <!-- ================================================================ 8 MINIMUM -->
+    <section class="chapter" id="minimum">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>8</b> Minimumeigenschaften</span>
+        <h2>Wer ist am nächsten dran?</h2>
+      </div>
+      <div data-widget="min-curves"></div>
+    </section>
+
+    <!-- ================================================================ 9 SCHIEFE -->
+    <section class="chapter" id="schiefe">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>9</b> Schiefe</span>
+        <h2>Wohin kippt die Verteilung?</h2>
+      </div>
+      <div data-widget="skew-shaper"></div>
+      <div data-widget="mini-quiz" data-set="schiefe"></div>
+    </section>
+
+    <!-- ================================================================ 10 WAHL -->
+    <section class="chapter" id="wahl">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>10</b> Skalenniveau</span>
+        <h2>Welches Maß wann?</h2>
+      </div>
+      <div data-widget="scale-sort"></div>
+    </section>
+
+    <!-- ================================================================ 11 ÜBUNG 3 -->
+    <section class="chapter" id="uebung3">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>11</b> Übungsblatt 3</span>
+        <h2>Aufgaben 9 bis 12, Schritt für Schritt</h2>
+      </div>
+      <nav class="measure-chips" aria-label="Aufgaben von Übungsblatt 3">
+        <a class="tag" href="#ue-9">Aufgabe 9: Noten</a>
+        <a class="tag" href="#ue-10">Aufgabe 10: Reaktionszeiten</a>
+        <a class="tag" href="#ue-11">Aufgabe 11: Körpergewicht</a>
+        <a class="tag" href="#ue-12">Aufgabe 12: Lernfortschritt</a>
+      </nav>
+      <div class="prose">
+        <h3 id="ue-9">Aufgabe 9: 100 Klausurnoten</h3>
+        <p>In einer Statistik-Klausur wurden 100 Noten von 1 bis 5 vergeben. Gefragt ist:</p>
+        <ol class="ue-parts">
+          <li><strong>a)</strong> die Häufigkeitsverteilung mit relativen Häufigkeiten und ein Stabdiagramm,</li>
+          <li><strong>b)</strong> die empirische Verteilungsfunktion, berechnet und gezeichnet,</li>
+          <li><strong>c)</strong> Modus, Median und arithmetisches Mittel,</li>
+          <li><strong>d)</strong> das 0,25- und das 0,75-Quantil.</li>
+        </ol>
+        <p class="small muted">Alles erst von Hand, dann mit R kontrollieren. Dazu brauchst du die Häufigkeiten (Folien 41 bis 52) und die Kapitel 2 bis 6 dieser Seite.</p>
+      </div>
+      <div data-widget="ue-a9"></div>
+      <div class="prose">
+        <h3 id="ue-10">Aufgabe 10: Reaktionszeiten aus Aufgabe 8</h3>
+        <p>Es geht wieder um die 60 Reaktionszeiten in Millisekunden aus Aufgabe 8. Alle Berechnungen sollst du mit R machen. Gefragt ist:</p>
+        <ol class="ue-parts">
+          <li><strong>a)</strong> ein Boxplot, von Hand gezeichnet, die Zahlen dafür aus R,</li>
+          <li><strong>b)</strong> Mittel und Median im Vergleich: Wodurch entsteht der Unterschied?</li>
+          <li><strong>c)</strong> ein geeignetes getrimmtes Mittel.</li>
+        </ol>
+      </div>
+      <div data-widget="ue-a10"></div>
+      <div class="prose">
+        <h3 id="ue-11">Aufgabe 11: Körpergewicht von 100 Studenten</h3>
+        <p>Von 100 Studenten ist nur bekannt, wie viele in welche Gewichtsklasse fallen. Gesucht ist näherungsweise das arithmetische Mittel. Das ist genau die Rechnung mit den Klassenmitten von Folie 113.</p>
+      </div>
+      <div data-widget="ue-a11"></div>
+      <div class="prose">
+        <h3 id="ue-12">Aufgabe 12: Lernfortschritt</h3>
+        <p>Eine Versuchsperson soll 20 Trigramme wie MIK oder LUR jeweils einer von zwei Antworten zuordnen. Nach jeder Antwort erfährt sie, ob sie richtig war. Es gibt 6 Durchgänge, nummeriert von 0 bis 5. Der Anteil der Fehler <span data-tex="f_i"></span> sinkt dabei so:</p>
+      </div>
+      <div class="table-wrap">
+        <table class="t">
+          <thead><tr><th scope="col">Durchgang <span data-tex="i"></span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
+          <tbody><tr><th scope="row">Fehleranteil <span data-tex="f_i"></span></th><td class="num">0,55</td><td class="num">0,46</td><td class="num">0,35</td><td class="num">0,29</td><td class="num">0,25</td><td class="num">0,21</td></tr></tbody>
+        </table>
+      </div>
+      <div class="prose">
+        <p>Der Lernfortschritt ist das Verhältnis <span data-tex="x_i = f_i \div f_{i-1}"></span> für <span data-tex="i = 1, \dots, 5"></span>. Gefragt ist:</p>
+        <ol class="ue-parts">
+          <li><strong>a)</strong> ein geeignetes Maß für den mittleren Lernfortschritt,</li>
+          <li><strong>b)</strong> welche Fehleranteile für die Durchgänge 1 bis 5 vorhergesagt werden, wenn der Lernfortschritt konstant ist und man vom beobachteten <span data-tex="f_0 = 0{,}55"></span> ausgeht.</li>
+        </ol>
+      </div>
+      <div data-widget="ue-a12"></div>
+    </section>
+
+    <!-- ================================================================ 12 SPIELPLATZ -->
+    <section class="chapter" id="spielplatz">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>12</b> Spielplatz</span>
+        <h2>Deine eigenen Daten</h2>
+      </div>
+      <div data-widget="playground"></div>
+    </section>
+
+    <!-- ================================================================ 13 TRAINER -->
+    <section class="chapter" id="trainer">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>13</b> Trainer</span>
+        <h2>Üben, bis es sitzt</h2>
+      </div>
+      <div data-widget="trainer"></div>
+    </section>
+
+    <!-- ================================================================ 14 KARTEN -->
+    <section class="chapter" id="karten">
+      <div class="chapter-head">
+        <span class="chapter-no"><b>14</b> Wiederholen</span>
+        <h2>Karteikarten und Abschlussquiz</h2>
+      </div>
+      <div data-widget="flashcards"></div>
+      <div data-widget="quiz"></div>
+    </section>
+
+    <!-- ================================================================ 15 KARTE -->
+    
+
+  </main>
+</div>
+
+<footer class="site-foot">
+  <div class="inner">
+    <p><strong>Inoffizielle Lernhilfe</strong> zu den Lagemaßen aus Statistik 1 (Folien 90–125 und 133–142, Übungsblatt 3, WS 2026/27). Keine offizielle Seite einer Universität. Alle Rechenregeln folgen den Folien, insbesondere die Quantil-Regel von Folie 101.</p>
+    <p>Dein Fortschritt bleibt nur in diesem Browser gespeichert.</p>
+  </div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

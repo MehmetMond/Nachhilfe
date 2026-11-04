@@ -1,0 +1,346 @@
+/* =====================================================================
+   Übungsblatt 3 (Kapitel 11): ue-a9, ue-a10, ue-a11, ue-a12
+   Alle Klassen mit Präfix ue-, Farben nur über die Variablen aus style.css.
+   ===================================================================== */
+
+.ue { gap: 1.1rem; }
+.ue-sym { white-space: nowrap; }
+.ue-sym i { font-family: var(--font-math); font-size: 1.07em; }
+.ue-sym sub { font-size: 0.72em; font-family: var(--font-math); }
+.ue-sym i.ue-bar { text-decoration: overline; }
+
+/* ---------- Kopf: Fortschritt und „Von vorn“ ---------- */
+
+.ue-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
+.ue-prog { display: inline-flex; align-items: center; gap: 0.7rem; min-height: 34px; }
+.ue-dots { display: inline-flex; gap: 6px; }
+.ue-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--rule); }
+.ue-dot.is-current { border-color: var(--accent); background: var(--accent-soft); }
+.ue-dot.is-solved { border-color: var(--ok); background: var(--ok); }
+.ue-dot.is-revealed { border-color: var(--warn); background: var(--warn-soft); }
+.ue-prog-t { font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; color: var(--ink-2); }
+.ue-reset { gap: 0.4rem; }
+.ue-reset.is-armed { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
+
+/* ---------- Daten oben (Noten, Strichliste, sortierte Liste) ---------- */
+
+.ue-intro { display: grid; gap: 0.8rem; min-width: 0; }
+.ue-data { display: grid; gap: 0.7rem; padding: 0.85rem 0.95rem; border-radius: var(--r); background: var(--surface-2); border: 1px solid var(--rule); min-width: 0; }
+.ue-data-t { font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; color: var(--ink-2); }
+.ue-grades { display: grid; gap: 0.15rem; font-family: var(--font-mono); font-size: clamp(0.84rem, 2.6vw, 1.02rem); line-height: 1.5; color: var(--ink); }
+.ue-grow { display: flex; flex-wrap: wrap; }
+.ue-g { display: inline-block; width: 1.32ch; text-align: center; border-radius: 3px; transition: opacity 160ms ease, background 160ms ease; }
+.ue-g.is-counted { opacity: 0.32; }
+.ue-g.is-now { opacity: 1; background: var(--accent); color: var(--accent-ink); }
+.ue-tally-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; }
+.ue-tally-note { font-size: 0.92rem; color: var(--ink-2); }
+.ue-tally { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.ue-tcol { display: grid; align-content: start; gap: 0.3rem; padding: 0.45rem 0.4rem 0.4rem; border-radius: 10px; background: var(--surface); border: 1px solid var(--rule); min-width: 0; }
+.ue-thead { font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; color: var(--muted); text-align: center; }
+.ue-tgroups { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 2px 3px; min-height: 48px; }
+.ue-tg { display: block; width: 28px; height: 22px; overflow: visible; }
+.ue-tg line { stroke: var(--ink-2); stroke-width: 2; stroke-linecap: round; }
+.ue-tcount { font-family: var(--font-math); font-size: 0.95rem; text-align: center; color: var(--ok); min-height: 0; }
+.ue-tally.has-counts .ue-tcount { min-height: 1.3em; }
+
+/* ---------- Schrittfolge ---------- */
+
+.ue-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.ue-part { position: relative; border: 1.5px solid var(--rule); border-radius: var(--r); background: var(--surface); min-width: 0; transition: border-color 200ms ease, box-shadow 200ms ease; }
+.ue-part[data-state="current"] { border-color: color-mix(in srgb, var(--accent) 60%, var(--rule)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.ue-part[data-state="solved"] { border-color: color-mix(in srgb, var(--ok) 45%, var(--rule)); }
+.ue-part[data-state="revealed"] { border-color: color-mix(in srgb, var(--warn) 45%, var(--rule)); }
+/* Verbindungslinie zwischen den Kreisen */
+.ue-part:not(:last-child)::after {
+  content: ""; position: absolute; left: 30px; bottom: -0.8rem; width: 2px; height: 0.8rem; background: var(--rule);
+}
+.ue-part[data-state="solved"]:not(:last-child)::after { background: color-mix(in srgb, var(--ok) 60%, var(--rule)); }
+.ue-ph { margin: 0; font-size: inherit; }
+.ue-pbtn {
+  display: flex; align-items: center; gap: 0.75rem; width: 100%; min-height: 56px; padding: 0.6rem 0.85rem;
+  background: transparent; border: 0; border-radius: var(--r); color: var(--ink); cursor: pointer; text-align: left;
+  font: inherit;
+}
+.ue-pbtn:hover .ue-ptext { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.ue-mark {
+  flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface-2); border: 2px solid var(--rule); color: var(--muted);
+  font-family: var(--font-display); font-weight: 800; font-size: 1rem; transition: background 200ms ease, border-color 200ms ease;
+}
+.ue-part[data-state="current"] .ue-mark { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ue-part[data-state="solved"] .ue-mark { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.ue-part[data-state="solved"] .ue-mark-t { display: none; }
+.ue-part[data-state="solved"] .ue-mark::after { content: "✓"; }
+.ue-part[data-state="revealed"] .ue-mark { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.ue-ptitle { flex: 1; min-width: 0; display: grid; gap: 0.05rem; }
+.ue-ptag { font-family: var(--font-display); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ue-ptext { font-family: var(--font-display); font-weight: 700; font-size: 1.04rem; line-height: 1.25; }
+.ue-pstate { flex: none; font-family: var(--font-display); font-size: 0.78rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 99px; }
+.ue-pstate:empty { display: none; }
+.ue-part[data-state="current"] .ue-pstate { color: var(--accent-text); background: var(--accent-soft); }
+.ue-part[data-state="solved"] .ue-pstate { color: var(--ok); background: var(--ok-soft); }
+.ue-part[data-state="revealed"] .ue-pstate { color: var(--warn); background: var(--warn-soft); }
+.ue-chev { flex: none; display: grid; place-items: center; color: var(--muted); transition: transform 200ms ease; }
+.ue-pbtn[aria-expanded="true"] .ue-chev { transform: rotate(180deg); }
+.ue-pbody { display: grid; gap: 0.95rem; padding: 0.1rem 1rem 1.05rem; min-width: 0; }
+.ue-pbody > * { min-width: 0; }
+
+.ue-how { display: grid; gap: 0.35rem; padding: 0.7rem 0.9rem; border-radius: 12px; background: var(--surface-2); }
+.ue-how-t { font-family: var(--font-display); font-weight: 800; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.ue-how ol { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.25rem; font-size: 0.96rem; color: var(--ink-2); }
+
+/* ---------- Ein Schritt ---------- */
+
+.ue-stage { display: grid; gap: 0.65rem; min-width: 0; }
+.ue-stage > * { min-width: 0; }
+.ue-prompt .ue-tex { margin-top: 0.3rem; }
+.ue-stage + .ue-stage { border-top: 1px dashed var(--rule); padding-top: 0.95rem; }
+.ue-stage-t { font-family: var(--font-display); font-weight: 700; }
+.ue-prompt { font-weight: 600; }
+.ue-fields-wrap { min-width: 0; }
+.ue-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; }
+.ue-field { display: inline-flex; align-items: center; gap: 0.5rem; }
+.ue-lab { font-family: var(--font-display); font-weight: 650; font-size: 0.96rem; }
+.ue-unit { color: var(--muted); font-size: 0.92rem; }
+.num-input.ue-in { min-height: 40px; }
+.num-input.ue-in-s { width: 4.6rem; }
+.num-input.ue-in-m { width: 6rem; }
+.num-input.ue-in-l { width: 7.2rem; }
+.num-input.ue-in[readonly] { cursor: default; }
+.num-input.ue-in.ue-shown { border-color: var(--warn); background: var(--warn-soft); border-style: dashed; }
+.ue-row5-wrap { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end; gap: 0.6rem; }
+.ue-row5-h { padding-bottom: 0.55rem; font-size: 1.1rem; }
+.ue-row5 { display: grid; grid-template-columns: repeat(5, minmax(0, 5.4rem)); gap: 0.45rem; }
+.ue-cell5 { display: grid; gap: 0.2rem; justify-items: stretch; min-width: 0; }
+.ue-cell5 .ue-lab { font-size: 0.8rem; color: var(--muted); text-align: center; white-space: nowrap; }
+.ue-cell5 .num-input.ue-in { width: 100%; min-width: 0; padding-left: 0.2rem; padding-right: 0.2rem; }
+.ue-sum { font-family: var(--font-display); font-size: 0.88rem; font-weight: 650; color: var(--muted); margin-top: 0.45rem; }
+.ue-sum.is-ok { color: var(--ok); }
+
+.ue-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ue-actions[hidden] { display: none; }
+.ue-fb:empty { display: none; }
+.ue-fb.is-note { color: var(--ink-2); }
+.ue-fb.is-shown { color: var(--warn); }
+.ue-fb:focus { outline: none; box-shadow: none; }
+.ue-tips { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.ue-tip {
+  padding: 0.55rem 0.8rem; border-radius: 12px; background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); font-size: 0.96rem;
+}
+.ue-tip-n { display: inline-block; margin-right: 0.5rem; font-family: var(--font-display); font-weight: 800; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); }
+.ue-why { display: grid; gap: 0.45rem; padding: 0.15rem 0 0.15rem 0.9rem; border-left: 3px solid var(--ok); color: var(--ink-2); font-size: 0.97rem; }
+.ue-stage.is-revealed .ue-why { border-left-color: var(--warn); }
+.ue-sol { border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); min-width: 0; }
+.ue-sol > summary {
+  display: flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0.4rem 0.85rem; cursor: pointer;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.93rem; color: var(--accent-text); border-radius: 12px;
+}
+.ue-sol[open] > summary { border-bottom: 1px solid var(--rule); border-radius: 12px 12px 0 0; }
+.ue-sol-body { display: grid; gap: 0.55rem; padding: 0.75rem 0.9rem 0.85rem; min-width: 0; font-size: 0.97rem; }
+.ue-tex { overflow-x: auto; overflow-y: hidden; padding: 0.1rem 0; max-width: 100%; }
+.ue-tex .katex-display { margin: 0.25rem 0; }
+.ue-ref { font-size: 0.86rem; color: var(--muted); border-top: 1px dashed var(--rule); padding-top: 0.45rem; }
+.ue-tw { margin: 0.1rem 0; }
+.ue-t th, .ue-t td { padding: 0.4rem 0.6rem; font-size: 0.95rem; white-space: nowrap; }
+
+/* Auswahl-Fragen */
+.ue-mc { display: grid; gap: 0.45rem; }
+.ue-opt {
+  display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); gap: 0.65rem; align-items: start; width: 100%;
+  min-height: 46px; padding: 0.6rem 0.85rem; border-radius: 12px; border: 1.5px solid var(--rule); background: var(--surface);
+  color: var(--ink); font: inherit; font-size: 0.98rem; line-height: 1.45; text-align: left; cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.ue-opt:hover { border-color: var(--accent); }
+.ue-opt-dot { width: 1.15rem; height: 1.15rem; margin-top: 0.2rem; border-radius: 50%; border: 2px solid var(--muted); display: grid; place-items: center; font-size: 0.72rem; font-weight: 800; line-height: 1; }
+.ue-opt.is-miss { border-color: var(--bad); background: var(--bad-soft); }
+.ue-opt.is-miss .ue-opt-dot { border-color: var(--bad); color: var(--bad); }
+.ue-opt.is-miss .ue-opt-dot::after { content: "✕"; }
+.ue-opt.is-ok { border-color: var(--ok); background: var(--ok-soft); }
+.ue-opt.is-ok .ue-opt-dot { border-color: var(--ok); background: var(--ok); color: var(--surface); }
+.ue-opt.is-ok .ue-opt-dot::after { content: "✓"; }
+.ue-opt[disabled] { opacity: 0.5; cursor: default; }
+.ue-opt[disabled]:hover { border-color: var(--rule); }
+
+/* Grafik nach einem gelösten Teil */
+.ue-visual { display: grid; gap: 0.6rem; padding-top: 0.95rem; border-top: 1px solid var(--rule); min-width: 0; animation: ue-in 380ms ease both; }
+@keyframes ue-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.ue-cap { font-size: 0.92rem; color: var(--ink-2); }
+.ue-legend { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; font-size: 0.86rem; color: var(--muted); }
+
+/* Abschluss */
+.ue-final { padding: 0.85rem 1rem; border-radius: var(--r); border: 1.5px solid var(--rule); }
+.ue-final.is-full { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+.ue-final.is-partial { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+
+/* ---------- SVG ---------- */
+
+.ue-chart { min-width: 0; }
+.ue-svg text { user-select: none; }
+.ue-stick { stroke: color-mix(in srgb, var(--ink) 70%, transparent); stroke-width: 5; stroke-linecap: butt; }
+.ue-stick.is-mod { stroke: var(--c-mod); }
+.ue-vlab { fill: var(--ink-2); font-family: var(--font-display); font-size: 12px; font-weight: 700; }
+.ue-step { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+.ue-jump { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 2 3; }
+.ue-open { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.ue-fill { fill: var(--ink); }
+.ue-read { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.ue-read-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.ue-read-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; }
+.ue-read-row .ue-slider { flex: 1 1 200px; max-width: 420px; }
+.ue-read-out { font-family: var(--font-display); font-weight: 650; min-height: 1.5em; }
+.ue-blk { stroke: var(--surface); stroke-width: 1.5; }
+.ue-blk-0 { fill: color-mix(in srgb, var(--ink) 9%, var(--surface)); }
+.ue-blk-1 { fill: color-mix(in srgb, var(--ink) 18%, var(--surface)); }
+.ue-blk-t { fill: var(--ink); font-family: var(--font-display); font-size: 12px; font-weight: 700; }
+.ue-mline-med { stroke: var(--c-med); stroke-width: 3; }
+.ue-mline-q { stroke: var(--c-q); stroke-width: 2.5; stroke-dasharray: 5 3; }
+
+/* ---------- R ---------- */
+
+.ue-r { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.55rem; padding-top: 1rem; border-top: 1px solid var(--rule); min-width: 0; }
+.ue-r-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.ue-r-head .btn { gap: 0.4rem; }
+.ue-r-sub, .ue-r-note { font-size: 0.92rem; color: var(--ink-2); }
+.ue-pre {
+  margin: 0; max-width: 100%; overflow-x: auto; padding: 0.85rem 1rem; border-radius: var(--r);
+  background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.65; white-space: pre;
+  font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+}
+.ue-pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+.ue-com { color: var(--muted); }
+.ue-cmd { font-weight: 700; }
+.ue-copy-msg { font-family: var(--font-display); font-size: 0.9rem; font-weight: 650; color: var(--ink-2); min-height: 0; }
+.ue-copy-msg:empty { display: none; }
+.ue-copy-msg.is-ok { color: var(--ok); }
+.ue-rout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; min-width: 0; }
+.ue-rout > summary { display: flex; align-items: center; min-height: 40px; cursor: pointer; font-family: var(--font-display); font-weight: 700; color: var(--accent-text); }
+.ue-rout[open] { gap: 0.5rem; }
+
+/* ---------- Gemeinsam für Aufgabe 10 bis 12 ---------- */
+
+.ue-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.ue-vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; }
+.seg.is-locked button[aria-pressed="false"] { opacity: 0.45; cursor: default; }
+.seg.is-locked button { cursor: default; }
+.ue-tiles { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+.ue-tiles .stat-value { font-size: 1.4rem; }
+.ue-s-trim { border-style: dashed; }
+.ue-halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.ue-lead { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 2; }
+.ue-lead-med { stroke: var(--c-med); }
+.ue-lead-q { stroke: var(--c-q); }
+.ue-fence { stroke: var(--muted); stroke-width: 1.3; stroke-dasharray: 5 4; }
+.ue-lbl-ink { fill: var(--ink-2); }
+.ue-lbl-muted { fill: var(--muted); }
+.ue-medline { stroke: var(--c-med); stroke-width: 3.5; }
+.ue-break { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.ue-dot-cut { fill: var(--ink-2); opacity: 0.22; }
+.ue-dot-gone { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.ue-mline-med2 { stroke: var(--c-med); stroke-width: 2.5; }
+.ue-mline-mean { stroke: var(--c-mean); stroke-width: 2; stroke-dasharray: 6 4; }
+.ue-mline-trim { stroke: var(--c-mean); stroke-width: 2; stroke-dasharray: 1.5 3; stroke-linecap: round; }
+.ue-mk-trim { fill: var(--surface); stroke: var(--c-mean); stroke-width: 2; }
+
+/* Aufgabe 10: Urliste und sortierte Tabelle */
+.ue-raw > summary { display: flex; align-items: center; min-height: 36px; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; color: var(--accent-text); }
+.ue-raw-rows { display: grid; gap: 0.2rem; padding: 0.4rem 0 0.2rem; font-family: var(--font-math); font-variant-numeric: tabular-nums; font-size: 0.95rem; color: var(--ink-2); }
+.ue-raw-row { display: flex; flex-wrap: wrap; gap: 0.1rem 0.75rem; }
+.ue-st { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+.ue-sc {
+  position: relative; display: grid; justify-items: center; gap: 0; padding: 0.15rem 0.1rem 0.2rem; border-radius: 8px;
+  background: var(--surface); border: 1.5px solid var(--rule); min-width: 0; transition: background 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+.ue-sc-p { font-family: var(--font-display); font-size: 0.66rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
+.ue-sc-v { font-family: var(--font-math); font-size: 0.95rem; font-variant-numeric: tabular-nums; line-height: 1.25; }
+.ue-sc.is-ext { border-color: var(--ink-2); }
+.ue-sc.is-q { border-color: var(--c-q); background: var(--c-q-soft); color: var(--c-q-ink); }
+.ue-sc.is-med { border-color: var(--c-med); background: var(--c-med-soft); color: var(--c-med-ink); }
+.ue-sc.is-out { border-color: var(--c-q); border-style: dashed; color: var(--c-q-ink); }
+.ue-sc.is-cut { opacity: 0.4; border-style: dashed; }
+.ue-sc.is-cut .ue-sc-v { text-decoration: line-through; }
+.ue-sc.is-hl { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-text); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); opacity: 1; }
+.ue-sc.is-q .ue-sc-p, .ue-sc.is-med .ue-sc-p, .ue-sc.is-hl .ue-sc-p { color: inherit; }
+.ue-keys { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; font-size: 0.85rem; color: var(--ink-2); }
+.ue-key { display: inline-flex; align-items: center; gap: 0.35rem; }
+.ue-key::before { content: ""; width: 0.9rem; height: 0.9rem; border-radius: 4px; border: 1.5px solid var(--rule); background: var(--surface); }
+.ue-key-q::before { border-color: var(--c-q); background: var(--c-q-soft); }
+.ue-key-med::before { border-color: var(--c-med); background: var(--c-med-soft); }
+.ue-key-out::before { border-color: var(--c-q); border-style: dashed; }
+.ue-key-cut::before { border-style: dashed; opacity: 0.6; }
+.ue-cm { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; font-size: 0.93rem; }
+.ue-cm span { white-space: nowrap; }
+
+/* Aufgabe 11 */
+.ue-tin td, .ue-tin th { vertical-align: middle; }
+.ue-tin td.ue-tdin { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+.ue-tin .num-input.ue-in { width: 5.4rem; }
+.ue-sumrow { margin-top: 0.7rem; }
+.ue-hbar { fill: color-mix(in srgb, var(--ink) 16%, transparent); stroke: var(--surface); stroke-width: 1; transition: opacity 200ms ease; }
+.ue-hbar.is-faded { fill: color-mix(in srgb, var(--ink) 8%, transparent); }
+.ue-rdot { fill: var(--ink-2); }
+.ue-midline { stroke: var(--ink-2); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.ue-mk-mid { fill: var(--surface); stroke: var(--ink); stroke-width: 1.8; }
+.ue-midlab { fill: var(--ink-2); font-family: var(--font-display); font-size: 11.5px; font-weight: 700; }
+.ue-tri-open { fill: var(--surface); stroke: var(--c-mean); stroke-width: 1.8; }
+.ue-check-real { display: grid; gap: 0.4rem; padding: 0.7rem 0.9rem; border-radius: 12px; background: var(--c-mean-soft); border: 1.5px solid color-mix(in srgb, var(--c-mean) 45%, transparent); }
+
+/* Aufgabe 12 */
+.ue-fbar { fill: color-mix(in srgb, var(--ink) 14%, transparent); }
+.ue-arc { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.ue-arc-head { fill: var(--muted); }
+.ue-flab { fill: var(--muted); font-family: var(--font-math); font-size: 13px; font-variant-numeric: tabular-nums; }
+.ue-flab.is-known { fill: var(--ink); font-weight: 600; }
+.ue-pcurve { fill: none; stroke: var(--c-mean); stroke-width: 2.5; }
+.ue-pcurve-am { fill: none; stroke: var(--muted); stroke-width: 1.8; stroke-dasharray: 5 4; }
+.ue-pdot { fill: var(--surface); stroke: var(--c-mean); stroke-width: 2; }
+.ue-legend2 { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; font-size: 0.88rem; color: var(--ink-2); }
+.ue-lg { display: inline-flex; align-items: center; gap: 0.4rem; }
+.ue-lg::before { content: ""; width: 0.75rem; height: 0.75rem; border-radius: 50%; }
+.ue-lg-obs::before { background: var(--ink-2); }
+.ue-lg-pred::before { width: 1.4rem; height: 0.75rem; border-radius: 0; background: radial-gradient(circle, var(--surface) 0 2.5px, var(--c-mean) 3px 4.5px, transparent 5px), linear-gradient(var(--c-mean), var(--c-mean)) center / 100% 2.5px no-repeat; }
+
+@media (max-width: 560px) {
+  .ue-st { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; }
+  .ue-sc-v { font-size: 0.9rem; }
+  .ue-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ue-tiles .stat-value { font-size: 1.2rem; }
+  .ue-tin th, .ue-tin td { padding-left: 0.45rem; padding-right: 0.45rem; }
+  .ue-tin .num-input.ue-in { width: 4.6rem; }
+}
+
+@media (max-width: 560px) {
+  .ue-pbtn { gap: 0.55rem; padding: 0.55rem 0.6rem; }
+  .ue-part:not(:last-child)::after { left: 25px; }
+  .ue-mark { width: 30px; height: 30px; font-size: 0.92rem; }
+  .ue-pbody { padding: 0.1rem 0.7rem 0.95rem; }
+  .ue-how { padding: 0.6rem 0.75rem; }
+  .ue-row5-wrap { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; }
+  .ue-row5-h { padding-bottom: 0; }
+  .ue-row5 { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.3rem; }
+  .ue-tally { gap: 4px; }
+  .ue-tcol { padding: 0.35rem 0.15rem; }
+  .ue-tg { width: 22px; height: 18px; }
+  .ue-thead { font-size: 0.72rem; }
+  .ue-pre { font-size: 0.78rem; padding: 0.75rem 0.8rem; }
+  .ue-data { padding: 0.75rem 0.7rem; }
+}
+
+/* Nachträge */
+.ue-tinwrap { width: fit-content; max-width: 100%; }
+.ue-key-cut::before { border-color: var(--muted); border-style: dashed; background: var(--surface-2); }
+.ue-sc.is-out.is-cut { opacity: 0.55; }
+.ue-flab.is-narrow { font-size: 11.5px; }
+.ue-read-row input[type="range"].ue-slider { height: 34px; }
+@media (max-width: 560px) {
+  /* Zustand steht schon im Kreis (Haken, Farbe); Text nur für Screenreader, damit der Titel Platz hat */
+  .ue-pstate { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (max-width: 560px) {
+  /* 27 Noten pro Zeile wie auf dem Blatt, auch bei 360 px */
+  .ue-grades { font-size: clamp(0.72rem, 3.3vw, 1rem); }
+  .ue-g { width: 1.12ch; }
+  .ue-grow { flex-wrap: nowrap; }
+}

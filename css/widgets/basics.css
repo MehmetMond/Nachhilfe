@@ -1,0 +1,229 @@
+/* =====================================================================
+   Bündel „basics“: hero-demo, sorter, mode-bars, median-stepper.
+   Alle Klassen mit Präfix bs-. Farben nur über die Variablen aus style.css.
+   ===================================================================== */
+
+/* ---------- gemeinsam ---------- */
+
+.bs-sr {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.bs-status { color: var(--ink-2); font-size: 0.98rem; line-height: 1.55; }
+.bs-msg { font-family: var(--font-display); font-weight: 650; font-size: 0.9rem; color: var(--muted); }
+.bs-msg:empty { display: none; }
+.bs-msg.is-ok { color: var(--ok); }
+.bs-msg.is-miss { color: var(--bad); }
+.bs-own {
+  display: grid; gap: 0.55rem; padding: 0.85rem 0.95rem; border-radius: var(--r);
+  background: var(--surface-2); border: 1px solid var(--rule);
+}
+.bs-nw { white-space: nowrap; }
+.bs-own-label { font-family: var(--font-display); font-weight: 650; font-size: 0.92rem; color: var(--ink-2); }
+.bs-own-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.bs-tile-sub { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--ink-2); line-height: 1.3; }
+
+.bs-pop { animation: bs-pop 440ms cubic-bezier(.2, .8, .2, 1); }
+.bs-rise { animation: bs-rise 380ms ease both; }
+.bs-bump { animation: bs-bump 700ms cubic-bezier(.2, .8, .2, 1); }
+.bs-flash { animation: bs-flash 520ms ease; }
+@keyframes bs-pop { 0% { transform: scale(0.9); opacity: 0.35; } 55% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes bs-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes bs-bump { 0% { transform: none; } 30% { transform: translateY(-6px); } 100% { transform: none; } }
+@keyframes bs-flash { 0% { transform: scale(0.98); } 45% { transform: scale(1.012); } 100% { transform: none; } }
+
+/* Karten passen bis zu einer bestimmten Anzahl in eine Reihe und werden dafür schmaler */
+.bs-fit .ncards { flex-wrap: nowrap; }
+
+/* ---------- 1. hero-demo ---------- */
+
+.bs-hero {
+  position: relative; overflow: hidden; width: 100%; max-width: 30rem; margin-inline: auto;
+  gap: 0.85rem; box-shadow: var(--shadow-lg);
+}
+.bs-hero::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 5px;
+  background: linear-gradient(90deg, var(--c-mod), var(--c-med), var(--c-q), var(--c-mean));
+}
+.bs-hero .w-head { gap: 0.15rem; }
+.bs-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem; width: fit-content;
+  font-family: var(--font-display); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.bs-live { width: 8px; height: 8px; border-radius: 50%; background: var(--c-med); }
+.bs-hero.is-playing .bs-live { animation: bs-live 1.8s ease-out 3; }
+@keyframes bs-live {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-med) 60%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--c-med) 0%, transparent); }
+}
+.bs-hero h3 { font-size: 1.32rem; }
+
+.bs-hero-stage { display: grid; gap: 3px; }
+.bs-hero .ncards,
+.bs-hero-row { display: grid; grid-template-columns: repeat(9, minmax(0, 3rem)); gap: 5px; justify-content: center; }
+.bs-hero .ncard { min-width: 0; padding: 0.45rem 0.1rem 0.32rem; }
+.bs-hero .ncard-val { font-size: 1.14rem; }
+.bs-hero .ncard-pos { font-size: 0.68rem; white-space: nowrap; }
+.bs-hero-row { min-height: 1.6rem; }
+.bs-hero-above { align-items: end; }
+.bs-hero-below { align-items: start; min-height: 1.9rem; }
+
+/* Klammer über den Modus-Karten, Zeiger unter der Median-Karte */
+.bs-brace {
+  display: grid; color: var(--c-mod-ink); text-align: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.74rem; line-height: 1.1;
+  animation: bs-rise 360ms ease both;
+}
+.bs-brace::after { content: ""; height: 6px; margin: 2px 5px 0; border: 2px solid var(--c-mod); border-bottom: 0; border-radius: 6px 6px 0 0; }
+.bs-pointer { display: flex; justify-content: center; animation: bs-rise 360ms ease both; }
+.bs-pointer-in {
+  display: grid; justify-items: center; white-space: nowrap; color: var(--c-med-ink);
+  font-family: var(--font-display); font-weight: 800; font-size: 0.74rem; line-height: 1.1;
+}
+.bs-pointer-in::before {
+  content: ""; width: 0; height: 0; margin-bottom: 2px;
+  border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 7px solid var(--c-med);
+}
+
+.bs-hero-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+.bs-hero .stat { min-width: 0; padding: 0.5rem 0.55rem 0.45rem; transition: background 300ms ease, border-color 300ms ease; }
+.bs-hero .stat .stat-value { font-size: 1.42rem; white-space: nowrap; }
+.bs-tile:not(.is-on) .stat-value { color: var(--muted); }
+.bs-hero-cap { font-size: 0.94rem; line-height: 1.5; color: var(--ink-2); min-height: 4.5em; }
+.bs-hero-btns { gap: 0.5rem; }
+
+/* ---------- 2. sorter ---------- */
+
+.bs-sorter-stage { padding: 0.15rem 0; }
+.bs-sorter-stage.bs-fit .ncard { flex: 0 1 3.6rem; min-width: 0; padding-inline: 0.15rem; }
+.bs-sorter-stage.bs-many .ncards { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--bs-cw, 3.4rem), 1fr)); }
+.bs-sorter-stage.bs-many .ncard { min-width: 0; padding-inline: 0.2rem; }
+.bs-sorter .ncard-val { font-size: 1.36rem; }
+.bs-was {
+  visibility: hidden; margin-top: 1px; white-space: nowrap; line-height: 1.2;
+  font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; color: var(--muted);
+}
+.bs-sorter.is-sorted .bs-was { visibility: visible; animation: bs-rise 320ms ease both; }
+.bs-checks-title {
+  margin-bottom: -0.45rem; font-family: var(--font-display); font-weight: 800; font-size: 0.8rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
+.bs-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 0.75rem; }
+.bs-check {
+  display: grid; gap: 0.55rem; align-content: start; padding: 0.85rem 0.95rem;
+  border-radius: var(--r); background: var(--surface-2); border: 1px solid var(--rule);
+}
+.bs-check-q { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+.bs-check-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.bs-check .feedback,
+.bs-check .feedback.ok,
+.bs-check .feedback.miss { min-height: 0; font-family: var(--font-body); font-weight: 400; color: var(--ink-2); line-height: 1.5; }
+.bs-check .feedback:empty { display: none; }
+.bs-check .feedback.ok strong { color: var(--ok); }
+.bs-check .feedback.miss strong { color: var(--bad); }
+
+/* ---------- 3. mode-bars ---------- */
+
+.bs-mb-status {
+  display: grid; gap: 0.2rem; padding: 0.75rem 0.95rem; border-radius: var(--r);
+  border: 1.5px solid var(--rule); background: var(--surface-2);
+}
+.bs-mb-status.is-unique { border-color: var(--c-mod); background: var(--c-mod-soft); }
+.bs-mb-status.is-tie { border-style: dashed; border-color: var(--c-mod); background: var(--surface); }
+.bs-mb-main { font-family: var(--font-display); font-weight: 750; font-size: 1.06rem; line-height: 1.35; color: var(--ink); }
+.bs-mb-status.is-unique .bs-mb-main { color: var(--c-mod-ink); }
+.bs-mb-hint { font-size: 0.92rem; color: var(--ink-2); }
+
+.bs-mb-plot { display: grid; gap: 0.4rem; }
+.bs-mb-chart { min-height: 236px; }
+.bs-mb-count { fill: var(--ink); font-family: var(--font-display); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bs-mb-name { fill: var(--ink-2); font-family: var(--font-display); font-size: 13px; font-weight: 700; }
+.bs-mb-modlbl { font-size: 12.5px; }
+/* Hof in Kartenfarbe: Gitterlinien laufen nie sichtbar durch die Beschriftungen */
+.bs-mb-count, .bs-mb-modlbl { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.bs-mb .bar.bs-tie { fill: var(--c-mod-soft); stroke: var(--c-mod); stroke-width: 2; stroke-dasharray: 5 3; }
+.bs-mb-chart.bs-anim .bs-mb-bar {
+  transition: y 300ms cubic-bezier(.2, .8, .2, 1), height 300ms cubic-bezier(.2, .8, .2, 1), fill 200ms ease;
+}
+.bs-mb-chart.bs-anim .bs-mb-move { transition: transform 300ms cubic-bezier(.2, .8, .2, 1), opacity 200ms ease; }
+.bs-mb-ctrl { display: grid; }
+.bs-mb-cell { display: flex; justify-content: center; gap: 6px; }
+.bs-mb-ctrl.is-stacked .bs-mb-cell { flex-direction: column-reverse; align-items: center; gap: 4px; }
+.bs-mb-pm { width: 40px; padding: 0; font-size: 1.15rem; line-height: 1; }
+.bs-mb-ctrl.is-stacked .bs-mb-pm { width: 38px; }
+
+/* ---------- 4. median-stepper ---------- */
+
+.bs-ms { container: bs-ms / inline-size; }
+.bs-ms-main { display: grid; gap: 1rem; }
+@container bs-ms (min-width: 700px) {
+  .bs-ms-main { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 1.4rem; align-items: start; }
+  .bs-ms .ncard { min-width: 3.1rem; }
+  .bs-ms .ncard-val { font-size: 1.45rem; }
+  .bs-ms-stage.bs-fit .ncard { flex-basis: 3.6rem; }
+  .bs-ms-stage { padding-top: 2.1rem; }
+}
+.bs-ms-stage {
+  position: relative; padding: 1.75rem 0.5rem 0.2rem; border-radius: var(--r);
+  background: var(--surface-2); border: 1px solid var(--rule);
+}
+.bs-ms-state {
+  position: absolute; top: 0.45rem; left: 0.7rem; line-height: 1.2;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.7rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); transition: color 200ms ease;
+}
+.bs-ms-state.is-sorted { color: var(--accent-text); }
+.bs-ms-state.is-sorted::before { content: "✓ "; }
+.bs-ms .ncards { justify-content: center; gap: 6px; }
+.bs-ms-stage.bs-rows .ncards { row-gap: 2.7rem; }
+.bs-ms-stage.bs-fit .ncard { flex: 0 1 2.9rem; min-width: 0; padding-inline: 0.1rem; }
+@container bs-ms (max-width: 420px) {
+  .bs-ms-stage.bs-dense { padding-inline: 0.3rem; }
+  .bs-ms-stage.bs-dense .ncards { gap: 4px; }
+  .bs-ms-stage.bs-dense.bs-fit .ncard { padding-inline: 0; }
+  .bs-ms-stage.bs-dense .ncard-val { font-size: 0.98rem; letter-spacing: -0.02em; }
+}
+.bs-ms-axis { height: 2.5rem; }
+.bs-ms-mk { position: absolute; inset: 0; pointer-events: none; }
+.bs-ms-tri {
+  position: absolute; width: 0; height: 0; margin-left: -7px;
+  border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 9px solid var(--c-med);
+}
+.bs-ms-lab {
+  position: absolute; white-space: nowrap;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.88rem; color: var(--c-med-ink);
+}
+.bs-drop { animation: bs-rise 360ms ease both; }
+.bs-outcard { outline: 2px dashed var(--bad); outline-offset: 2px; }
+.bs-outflag {
+  position: absolute; right: 0; bottom: calc(100% + 6px); white-space: nowrap;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.68rem; color: var(--bad);
+}
+/* Mehrere Reihen: Die Ausreißer-Karte steht immer in der letzten Reihe, die Median-Markierung nie.
+   Darum kommt das Fähnchen dort unter die Karte, in den freien Platz unter der letzten Reihe. */
+.bs-ms-stage.bs-rows .bs-outflag { bottom: auto; top: calc(100% + 6px); }
+.bs-ms-steps > li { transition: color 200ms ease; }
+.bs-ms-steps > li.is-todo { color: var(--muted); }
+.bs-ms-steps > li.is-active .bs-ms-step > strong { color: var(--accent-text); }
+.bs-ms-step { padding-top: 0.25rem; line-height: 1.55; }
+.bs-ms-detail .katex { font-size: 1.04em; }
+/* Formelzeile unter dem Schritttext: bricht nur zwischen den Stücken um */
+.bs-ms-f {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.1rem 0.4rem;
+  width: fit-content; max-width: 100%; margin: 0.35rem 0 0.15rem; padding: 0.3rem 0.7rem;
+  border-radius: 10px; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink);
+}
+.bs-ms-fp { white-space: nowrap; }
+.bs-ms-und { font-size: 0.95rem; color: var(--ink-2); }
+.bs-ms-steps > li:nth-child(4).is-done .bs-ms-f { background: var(--c-med-soft); border-color: var(--c-med); color: var(--c-med-ink); }
+.bs-ms-aside { display: block; font-size: 0.9rem; color: var(--muted); }
+.bs-ms-nav { gap: 0.5rem; }
+.bs-ms-next.is-fin[disabled] { opacity: 1; background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.bs-ms-result {
+  display: grid; gap: 0.75rem; padding: 1rem 1.05rem; border-radius: var(--r);
+  border: 1.5px solid var(--c-med); background: var(--surface);
+}
+.bs-ms-result.is-out { border-color: var(--c-mean); }
+.bs-ms-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bs-ms-outtext { color: var(--ink-2); font-size: 0.96rem; }
