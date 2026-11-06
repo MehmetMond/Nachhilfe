@@ -105,6 +105,10 @@
         <span class="chapter-no"><b>1</b> Die Idee</span>
         <h2>Viele Werte, eine Zahl</h2>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: sortierte Werte</p>
+        <div class="formula" data-tex="x_{(1)} \le x_{(2)} \le \ldots \le x_{(n)}" data-display></div>
+      </div>
       <div data-widget="sorter"></div>
     </section>
 
@@ -113,6 +117,10 @@
       <div class="chapter-head">
         <span class="chapter-no"><b>2</b> <span class="t-mod">Modus</span></span>
         <h2>Der häufigste Wert</h2>
+      </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Modus</p>
+        <p class="gf-text">Modus = der Wert mit der größten Häufigkeit h_j</p>
       </div>
       <div data-widget="mode-bars"></div>
       <div data-widget="mini-quiz" data-set="modus"></div>
@@ -124,6 +132,13 @@
         <span class="chapter-no"><b>3</b> <span class="t-med">Median</span></span>
         <h2>Der Wert in der Mitte</h2>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Median</p>
+        <p class="gf-text">n ungerade:</p>
+        <div class="formula" data-tex="\tilde{x} = x_{((n+1)/2)}" data-display></div>
+        <p class="gf-text">n gerade:</p>
+        <div class="formula" data-tex="\tilde{x} = \tfrac{1}{2}\left[x_{(n/2)} + x_{(n/2+1)}\right]" data-display></div>
+      </div>
       <div data-widget="median-stepper"></div>
       <div data-widget="mini-quiz" data-set="median"></div>
     </section>
@@ -133,6 +148,13 @@
       <div class="chapter-head">
         <span class="chapter-no"><b>4</b> <span class="t-q">Quantile</span></span>
         <h2>Der Median ist nur ein Spezialfall</h2>
+      </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: p-Quantil</p>
+        <p class="gf-text">n · p keine ganze Zahl: aufrunden auf Platz k</p>
+        <div class="formula" data-tex="\tilde{x}_p = x_{(k)}" data-display></div>
+        <p class="gf-text">n · p = k ist eine ganze Zahl:</p>
+        <div class="formula" data-tex="\tilde{x}_p = \tfrac{1}{2}\left[x_{(k)} + x_{(k+1)}\right]" data-display></div>
       </div>
       <div data-widget="quantile-explorer"></div>
       <div data-widget="mini-quiz" data-set="quantile"></div>
@@ -144,6 +166,16 @@
         <span class="chapter-no"><b>5</b> <span class="t-q">Boxplot</span></span>
         <h2>Fünf Zahlen auf einen Blick</h2>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Boxplot</p>
+        <p class="gf-text">Fünf Zahlen: Min, Q₁, Median, Q₃, Max</p>
+        <div class="formula" data-tex="Q_1 = \tilde{x}_{0{,}25} \qquad Q_3 = \tilde{x}_{0{,}75}" data-display></div>
+        <p class="gf-text">Quartilabstand:</p>
+        <div class="formula" data-tex="Q_3 - Q_1" data-display></div>
+        <p class="gf-text">Whisker-Grenzen bei range = 1,5:</p>
+        <div class="formula" data-tex="Q_1 - 1{,}5 \cdot (Q_3 - Q_1)" data-display></div>
+        <div class="formula" data-tex="Q_3 + 1{,}5 \cdot (Q_3 - Q_1)" data-display></div>
+      </div>
       <div data-widget="boxplot-builder"></div>
       <div data-widget="mini-quiz" data-set="boxplot"></div>
     </section>
@@ -154,9 +186,35 @@
         <span class="chapter-no"><b>6</b> <span class="t-mean">Arithmetisches Mittel</span></span>
         <h2>Der Durchschnitt und sein Schwerpunkt</h2>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Mittel und Nulleigenschaft</p>
+        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i" data-display></div>
+        <div class="formula" data-tex="\sum_{i=1}^{n} (x_i - \bar{x}) = 0" data-display></div>
+      </div>
       <div data-widget="balance"></div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Mittel aus Tabelle und Klassen</p>
+        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{j=1}^{m} h_j \cdot a_j" data-display></div>
+        <div class="formula" data-tex="\bar{x} = \sum_{j=1}^{m} f_j \cdot a_j" data-display></div>
+        <div class="formula" data-tex="\bar{x} \approx \frac{1}{n}\sum_{j=1}^{m} h_j \cdot x&#x27;_j" data-display></div>
+        <p class="gf-text">mit der Klassenmitte</p>
+        <div class="formula" data-tex="x&#x27;_j = \tfrac{1}{2}\,(u_{j-1} + u_j)" data-display></div>
+      </div>
       <div data-widget="table-mean"></div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Mittel und Median</p>
+        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i" data-display></div>
+        <p class="gf-text">n ungerade:</p>
+        <div class="formula" data-tex="\tilde{x} = x_{((n+1)/2)}" data-display></div>
+        <p class="gf-text">n gerade:</p>
+        <div class="formula" data-tex="\tilde{x} = \tfrac{1}{2}\left[x_{(n/2)} + x_{(n/2+1)}\right]" data-display></div>
+      </div>
       <div data-widget="outlier-tug"></div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: lineare Transformation</p>
+        <div class="formula" data-tex="y_i = p \cdot x_i + q" data-display></div>
+        <div class="formula" data-tex="\bar{y} = p \cdot \bar{x} + q" data-display></div>
+      </div>
       <div data-widget="lin-trans"></div>
       <div data-widget="mini-quiz" data-set="mittel"></div>
     </section>
@@ -167,8 +225,22 @@
         <span class="chapter-no"><b>7</b> <span class="t-mean">Weitere Mittelwerte</span></span>
         <h2>Getrimmt, geometrisch, harmonisch</h2>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: getrimmtes Mittel</p>
+        <p class="gf-text">k = n · t, abgerundet (t = Anteil je Seite)</p>
+        <div class="formula" data-tex="\bar{x}_t = \frac{1}{n - 2k}\sum_{i=k+1}^{n-k} x_{(i)}" data-display></div>
+      </div>
       <div data-widget="trim-mean"></div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: geometrisches Mittel</p>
+        <div class="formula" data-tex="GM = \sqrt[n]{x_1 \cdot x_2 \cdot \ldots \cdot x_n}" data-display></div>
+        <p class="gf-text">nur für Werte größer als 0</p>
+      </div>
       <div data-widget="geo-mean"></div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: harmonisches Mittel</p>
+        <div class="formula" data-tex="HM = \frac{n}{\sum_{i=1}^{n} \frac{1}{x_i}}" data-display></div>
+      </div>
       <div data-widget="harm-mean"></div>
       <div data-widget="mini-quiz" data-set="weitere"></div>
     </section>
@@ -179,6 +251,13 @@
         <span class="chapter-no"><b>8</b> Minimumeigenschaften</span>
         <h2>Wer ist am nächsten dran?</h2>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Minimumeigenschaften</p>
+        <div class="formula" data-tex="\sum_{i=1}^{n} |x_i - a|" data-display></div>
+        <p class="gf-text">ist am kleinsten für a = Median</p>
+        <div class="formula" data-tex="\sum_{i=1}^{n} (x_i - a)^2" data-display></div>
+        <p class="gf-text">ist am kleinsten für a = Mittel</p>
+      </div>
       <div data-widget="min-curves"></div>
     </section>
 
@@ -187,6 +266,13 @@
       <div class="chapter-head">
         <span class="chapter-no"><b>9</b> Schiefe</span>
         <h2>Wohin kippt die Verteilung?</h2>
+      </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel: Schiefe</p>
+        <p class="gf-text">x̄ − x̃ &gt; 0: rechtsschief (linkssteil)</p>
+        <p class="gf-text">x̄ − x̃ &lt; 0: linksschief (rechtssteil)</p>
+        <p class="gf-text">Quartilskoeffizient (p = 0,25):</p>
+        <div class="formula" data-tex="g_p = \frac{(\tilde{x}_{1-p} - \tilde{x}) - (\tilde{x} - \tilde{x}_p)}{\tilde{x}_{1-p} - \tilde{x}_p}" data-display></div>
       </div>
       <div data-widget="skew-shaper"></div>
       <div data-widget="mini-quiz" data-set="schiefe"></div>
@@ -197,6 +283,13 @@
       <div class="chapter-head">
         <span class="chapter-no"><b>10</b> Skalenniveau</span>
         <h2>Welches Maß wann?</h2>
+      </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundregel: erlaubte Lagemaße</p>
+        <p class="gf-text">Nominal: Modus</p>
+        <p class="gf-text">Ordinal: zusätzlich Median und Quantile</p>
+        <p class="gf-text">Intervall: zusätzlich arithmetisches Mittel</p>
+        <p class="gf-text">Verhältnis: zusätzlich geometrisches Mittel</p>
       </div>
       <div data-widget="scale-sort"></div>
     </section>
@@ -224,6 +317,17 @@
         </ol>
         <p class="small muted">Alles erst von Hand, dann mit R kontrollieren. Dazu brauchst du die Häufigkeiten (Folien 41 bis 52) und die Kapitel 2 bis 6 dieser Seite.</p>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformeln für Aufgabe 9</p>
+        <div class="formula" data-tex="f_j = \frac{h_j}{n}" data-display></div>
+        <div class="formula" data-tex="F_j = f_1 + f_2 + \ldots + f_j" data-display></div>
+        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{j=1}^{m} h_j \cdot a_j" data-display></div>
+        <div class="formula" data-tex="\bar{x} = \sum_{j=1}^{m} f_j \cdot a_j" data-display></div>
+        <p class="gf-text">n · p keine ganze Zahl: aufrunden auf Platz k</p>
+        <div class="formula" data-tex="\tilde{x}_p = x_{(k)}" data-display></div>
+        <p class="gf-text">n · p = k ist eine ganze Zahl:</p>
+        <div class="formula" data-tex="\tilde{x}_p = \tfrac{1}{2}\left[x_{(k)} + x_{(k+1)}\right]" data-display></div>
+      </div>
       <div data-widget="ue-a9"></div>
       <div class="prose">
         <h3 id="ue-10">Aufgabe 10: Reaktionszeiten aus Aufgabe 8</h3>
@@ -234,10 +338,28 @@
           <li><strong>c)</strong> ein geeignetes getrimmtes Mittel.</li>
         </ol>
       </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformeln für Aufgabe 10</p>
+        <div class="formula" data-tex="Q_1 = \tilde{x}_{0{,}25} \qquad Q_3 = \tilde{x}_{0{,}75}" data-display></div>
+        <p class="gf-text">Quartilabstand:</p>
+        <div class="formula" data-tex="Q_3 - Q_1" data-display></div>
+        <p class="gf-text">Whisker-Grenzen bei range = 1,5:</p>
+        <div class="formula" data-tex="Q_1 - 1{,}5 \cdot (Q_3 - Q_1)" data-display></div>
+        <div class="formula" data-tex="Q_3 + 1{,}5 \cdot (Q_3 - Q_1)" data-display></div>
+        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i" data-display></div>
+        <p class="gf-text">k = n · t, abgerundet (t = Anteil je Seite)</p>
+        <div class="formula" data-tex="\bar{x}_t = \frac{1}{n - 2k}\sum_{i=k+1}^{n-k} x_{(i)}" data-display></div>
+      </div>
       <div data-widget="ue-a10"></div>
       <div class="prose">
         <h3 id="ue-11">Aufgabe 11: Körpergewicht von 100 Studenten</h3>
         <p>Von 100 Studenten ist nur bekannt, wie viele in welche Gewichtsklasse fallen. Gesucht ist näherungsweise das arithmetische Mittel. Das ist genau die Rechnung mit den Klassenmitten von Folie 113.</p>
+      </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformel für Aufgabe 11</p>
+        <div class="formula" data-tex="\bar{x} \approx \frac{1}{n}\sum_{j=1}^{m} h_j \cdot x&#x27;_j" data-display></div>
+        <p class="gf-text">mit der Klassenmitte</p>
+        <div class="formula" data-tex="x&#x27;_j = \tfrac{1}{2}\,(u_{j-1} + u_j)" data-display></div>
       </div>
       <div data-widget="ue-a11"></div>
       <div class="prose">
@@ -256,6 +378,13 @@
           <li><strong>a)</strong> ein geeignetes Maß für den mittleren Lernfortschritt,</li>
           <li><strong>b)</strong> welche Fehleranteile für die Durchgänge 1 bis 5 vorhergesagt werden, wenn der Lernfortschritt konstant ist und man vom beobachteten <span data-tex="f_0 = 0{,}55"></span> ausgeht.</li>
         </ol>
+      </div>
+      <div class="grundformel">
+        <p class="gf-title">Grundformeln für Aufgabe 12</p>
+        <div class="formula" data-tex="x_i = \frac{f_i}{f_{i-1}}" data-display></div>
+        <div class="formula" data-tex="GM = \sqrt[n]{x_1 \cdot x_2 \cdot \ldots \cdot x_n}" data-display></div>
+        <p class="gf-text">nur für Werte größer als 0</p>
+        <div class="formula" data-tex="\hat{f}_i = f_0 \cdot GM^{\,i}" data-display></div>
       </div>
       <div data-widget="ue-a12"></div>
     </section>

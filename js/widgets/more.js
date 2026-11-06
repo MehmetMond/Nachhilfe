@@ -1,11 +1,11 @@
 /*
  * Bündel „more“ (Kapitel 7: Weitere Mittelwerte), Klassenpräfix mo-.
- *   trim-mean  Getrimmtes Mittel (Folie 116, gerechnet wie R mean(x, trim = t)): Punktstreifen mit Streichzonen,
- *              Wanderkurve des getrimmten Mittels, R-Zeile
+ *   trim-mean  Getrimmtes Mittel (Folie 116, je Seite k = ⌊n · t⌋ Werte weg): Punktstreifen mit Streichzonen,
+ *              Wanderkurve des getrimmten Mittels
  *   geo-mean   Geometrisches Mittel für Wachstumsfaktoren (Folien 117–119, Aufgabe 12): echter Verlauf,
  *              konstant mit GM, konstant mit AM; Log-Trick mit R-Funktion von Folie 118
- *   harm-mean  Harmonisches Mittel fürs Durchschnittstempo auf gleicher Strecke (Folie 120);
- *              Extra: gleiche Zeit statt gleiche Strecke
+ *   harm-mean  Harmonisches Mittel fürs Durchschnittstempo auf gleicher Strecke (Folie 120):
+ *              Zeitbalken, Tempo-Achse mit HM und AM, Strecke per Regler
  * Die reinen Hilfsfunktionen (ohne DOM) stehen in P und werden für tests/more.test.js exportiert.
  * Alle Statistik kommt aus LM.stats, alle angezeigten Zahlen laufen durch LM.fmt.
  */
@@ -239,19 +239,6 @@
 
   /* ---------- R-Ausgaben ---------- */
 
-  // Runden wie R (ab Version 4): genau in der Mitte → zur geraden Ziffer, sonst nach dem echten Binärwert.
-  function rRound(x, d) {
-    if (!isFinite(x)) return x;
-    var neg = x < 0, s = Math.abs(x).toFixed(Math.min(100, d + 25)), dot = s.indexOf(".");
-    var head = s.slice(0, dot + 1 + d), tail = s.slice(dot + 1 + d);
-    var up;
-    if (/^50*$/.test(tail)) up = Number(head.replace(".", "").slice(-1)) % 2 === 1;
-    else up = tail.charAt(0) >= "5";
-    var unit = Math.pow(10, -d), r = Number(head.replace(/\.$/, ""));
-    if (up) r += unit;
-    r = Number(r.toFixed(d));
-    return neg ? -r : r;
-  }
   // So druckt R eine Zahl (7 signifikante Stellen, Punkt als Dezimaltrenner)
   function rNum(v) {
     if (isNaN(v)) return "NaN";
@@ -260,8 +247,6 @@
   }
   // Zahl im R-Code
   function rLit(v) { return String(Number(v.toPrecision(12))); }
-  function rTrimCall(pct) { return "round(mean(x, trim = " + rLit(pct / 100) + "), 2)"; }
-  function rTrimOut(xs, pct) { return "[1] " + rNum(rRound(St().trimInfo(xs, pct / 100).value, 2)); }
 
   /* ---------- Geometrisches Mittel ---------- */
 
@@ -343,17 +328,14 @@
 
   /* ---------- Harmonisches Mittel ---------- */
 
-  // Zwei Abschnitte mit den Tempi v1, v2. mode "km": gleiche Strecke `amount` je Abschnitt (hin und zurück),
-  // mode "zeit": gleiche Zeit `amount` (Stunden) je Abschnitt.
-  function trip(v1, v2, mode, amount) {
+  // Hin und zurück mit den Tempi v1, v2, je Richtung dieselbe Strecke `km` (Folie 120).
+  function trip(v1, v2, km) {
     var S = St(), hm = S.harmonicInfo([v1, v2]), am = S.mean([v1, v2]);
-    var d1, d2, t1, t2;
-    if (mode === "zeit") { t1 = t2 = amount; d1 = v1 * amount; d2 = v2 * amount; }
-    else { d1 = d2 = amount; t1 = amount / v1; t2 = amount / v2; }
+    var d1 = km, d2 = km, t1 = km / v1, t2 = km / v2;
     var dist = d1 + d2, time = t1 + t2;
     return {
-      mode: mode, v1: v1, v2: v2, d1: d1, d2: d2, t1: t1, t2: t2, dist: dist, time: time, avg: dist / time,
-      ok: hm.ok, hmInfo: hm, hm: hm.value, am: am, right: mode === "zeit" ? "am" : "hm"
+      v1: v1, v2: v2, d1: d1, d2: d2, t1: t1, t2: t2, dist: dist, time: time, avg: dist / time,
+      ok: hm.ok, hmInfo: hm, hm: hm.value, am: am
     };
   }
 
@@ -379,7 +361,7 @@
     tickValues: tickValues, decimalsOf: decimalsOf, fixedDe: fixedDe, texNum: texNum, texFixed: texFixed, eqTex: eqTex,
     smartDigits: smartDigits, joinDe: joinDe, numWord: numWord, pctChange: pctChange,
     trimView: trimView, kTex: kTex, kWords: kWords, trimSentences: trimSentences, trimCurve: trimCurve, stackDots: stackDots, dotLayout: dotLayout,
-    rRound: rRound, rNum: rNum, rLit: rLit, rTrimCall: rTrimCall, rTrimOut: rTrimOut,
+    rNum: rNum, rLit: rLit,
     ratios: ratios, growth: growth, gmTex: gmTex, amTex: amTex, telescopeTex: telescopeTex, logMeanTex: logMeanTex, rGeoOut: rGeoOut,
     trip: trip, duration: duration, hmTex: hmTex, amSpeedTex: amSpeedTex
   };
@@ -554,9 +536,9 @@
 
   LM.widget("trim-mean", function (el) {
     var PRE = [
-      { id: "rt", label: "Reaktionszeiten (Aufgabe 8, n = 60)", xs: RT_A8, unit: "ms", what: "die 60 Reaktionszeiten aus Aufgabe 8" },
-      { id: "f95", label: "Folie 95 mit Ausreißer", xs: [3, 6, 8, 9, 11, 150], unit: "", what: "" },
-      { id: "own", label: "Eigene", xs: null, unit: "", what: "" }
+      { id: "rt", label: "Reaktionszeiten (Aufgabe 8, n = 60)", xs: RT_A8, unit: "ms" },
+      { id: "f95", label: "Folie 95 mit Ausreißer", xs: [3, 6, 8, 9, 11, 150], unit: "" },
+      { id: "own", label: "Eigene", xs: null, unit: "" }
     ];
     var CHIPS = [0, 5, 10, 20];
     var st = { pre: "rt", pct: 10, xs: RT_A8.slice(), pad: 1, unit: "ms", ownText: "12 5 20 8 4 38 10 5 15" };
@@ -598,16 +580,13 @@
     var kHint = h("p", { class: "mo-khint" });
     var kBox = h("div", { class: "mo-kbox" }, [kMath, mLine, kHint]);
 
-    /* --- Diagramm, Kennzahlen, Sätze, Wanderkurve, R --- */
+    /* --- Diagramm, Kennzahlen, Sätze, Wanderkurve --- */
     var stripBox = h("div", { class: "chart mo-strip" });
     var tMean = tile("Mittel", "s-mean mo-dashed"), tTrim = tile("getrimmtes Mittel", "s-mean"), tMed = tile("Median", "s-med");
     var cutP = h("p", { class: "mo-cut" }), outP = h("p", { class: "mo-outs" }), nearP = h("p", { class: "mo-near" });
     var say = h("div", { class: "mo-say", attrs: { role: "status", "aria-live": "polite" } }, [cutP, outP, nearP]);
     var sparkBox = h("div", { class: "chart mo-spark" });
     var sparkNote = h("p", { class: "mo-spark-note" });
-    var R = rBlock('In R <span class="mo-r-note">(R-Befehl nicht auf den Folien)</span>');
-    // Der Befehl ist Zusatz, das getrimmte Mittel selbst steht auf Folie 116.
-    R.el.insertBefore(h("p", { class: "mo-hint mo-r-hint", text: "Den R-Befehl musst du in der Klausur nicht kennen. Die Rechnung dahinter schon: Das getrimmte Mittel steht auf Folie 116." }), R.el.children[1]);
 
     el.appendChild(h("div", { class: "w-controls mo-data" }, [seg.el]));
     el.appendChild(ownBox);
@@ -620,8 +599,7 @@
       h("div", { class: "mo-spark-wrap" }, [
         h("p", { class: "mo-spark-title", html: "So wandert das getrimmte Mittel <span>von 0 % bis 49 % je Seite. Hinterlegt: der Bereich deines Reglers (0 bis 25 %).</span>" }),
         sparkBox, sparkNote
-      ]),
-      R.el
+      ])
     ]));
 
     // Datenwerte wie in der Vorlage (Aufgabe 8: immer eine Nachkommastelle, „175,0“), eigene Zahlen wie getippt
@@ -707,12 +685,6 @@
         outP.classList.add("mo-pop");
       }
       wasAllOut = allOut;
-      var p = PRE.filter(function (q) { return q.id === st.pre; })[0];
-      var lines = [];
-      if (v.n <= 12) lines.push(["x <- c(" + st.xs.map(rLit).join(", ") + ")", "deine Daten"]);
-      else lines.push(["", "x enthält " + (p && p.what ? p.what : "deine " + v.n + " Werte")]);
-      lines.push([rTrimCall(st.pct), "getrimmtes Mittel: je Seite " + st.pct + " % weg, auf 2 Stellen gerundet"]);
-      R.set(lines, rTrimOut(st.xs, st.pct));
     }
 
     /* --- Punktstreifen --- */
@@ -1164,7 +1136,7 @@
      ================================================================ */
 
   LM.widget("harm-mean", function (el) {
-    var st = { v1: 30, v2: 90, km: 60, hours: 1, mode: "km" };
+    var st = { v1: 30, v2: 90, km: 60 };
     var cur = null;
 
     el.classList.add("widget", "mo", "mo-harm");
@@ -1175,21 +1147,13 @@
     var r1 = rangeRow({ name: "Hinweg-Tempo", min: 10, max: 150, step: 5, value: st.v1, show: kmh, onChange: function (v) { st.v1 = v; update(); } });
     var r2 = rangeRow({ name: "Rückweg-Tempo", min: 10, max: 150, step: 5, value: st.v2, show: kmh, onChange: function (v) { st.v2 = v; update(); } });
     var r3 = rangeRow({ name: "Strecke", min: 10, max: 200, step: 10, value: st.km, show: function (v) { return fmt(v, 2) + " km"; },
-      onChange: function (v) { if (st.mode === "km") st.km = v; else st.hours = v; update(); } });
-    var modeBtn = h("button", { class: "chip mo-modebtn", attrs: { type: "button", "aria-pressed": "false" },
-      html: 'Gleiche Zeit statt gleiche Strecke <span class="mo-xtag">Extra</span>', on: { click: function () { setMode(st.mode === "km" ? "zeit" : "km"); } } });
-    var extra = h("div", { class: "callout callout-extra mo-extra", attrs: { hidden: "" } }, [
-      h("p", { class: "callout-title", text: "Extra: Der Fall „gleiche Zeit“ steht nicht auf den Folien" }),
-      h("p", { class: "mo-extra-txt" })
-    ]);
+      onChange: function (v) { st.km = v; update(); } });
     var timeBox = h("div", { class: "chart mo-time" }), speedBox = h("div", { class: "chart mo-speed" });
     var tAvg = tile("echter Schnitt", "mo-s-real"), tHM = tile("harmonisches Mittel", "s-mean"), tAM = tile("arithmetisches Mittel", "s-mean mo-dashed");
     var sayP = h("p", { class: "mo-hsay", attrs: { role: "status", "aria-live": "polite" } });
     var fHM = h("p", { class: "mo-f" }), fAM = h("p", { class: "mo-f" }), why = h("p", { class: "mo-why" });
 
     el.appendChild(h("div", { class: "mo-rows mo-harm-rows" }, [r1.el, r2.el, r3.el]));
-    el.appendChild(h("div", { class: "w-controls" }, [modeBtn]));
-    el.appendChild(extra);
     el.appendChild(h("div", { class: "w-out" }, [
       h("p", { class: "mo-chart-title", text: "Zeit unterwegs" }), timeBox,
       h("p", { class: "mo-chart-title", text: "Tempo in km/h" }), speedBox,
@@ -1199,54 +1163,24 @@
       why
     ]));
 
-    function setMode(mode) {
-      st.mode = mode;
-      modeBtn.setAttribute("aria-pressed", String(mode === "zeit"));
-      extra.hidden = mode !== "zeit";
-      if (mode === "zeit") {
-        r1.config({ name: "Tempo Abschnitt 1" });
-        r2.config({ name: "Tempo Abschnitt 2" });
-        r3.config({ name: "Zeit je Abschnitt", min: 0.25, max: 4, step: 0.25, show: function (v) { return duration(v).text; } });
-        r3.set(st.hours, true);
-      } else {
-        r1.config({ name: "Hinweg-Tempo" });
-        r2.config({ name: "Rückweg-Tempo" });
-        r3.config({ name: "Strecke", min: 10, max: 200, step: 10, show: function (v) { return fmt(v, 2) + " km"; } });
-        r3.set(st.km, true);
-      }
-      r1.set(st.v1, true);
-      r2.set(st.v2, true);
-      update();
-    }
-
     function durTxt(hours) { var d = duration(hours); return (d.approx ? "etwa " : "") + d.text; }
 
     function update() {
-      cur = trip(st.v1, st.v2, st.mode, st.mode === "km" ? st.km : st.hours);
-      var T = cur, zeit = T.mode === "zeit";
-      var hmOk = !zeit, eq = Math.abs(T.v1 - T.v2) < 1e-9;
+      cur = trip(st.v1, st.v2, st.km);
+      var T = cur, eq = Math.abs(T.v1 - T.v2) < 1e-9;
       tAvg.set(fmt(T.avg, 2) + unitHtml("km/h"), fmt(T.dist, 2) + " km in " + durTxt(T.time));
-      tHM.set(fmt(T.hm, 2) + unitHtml("km/h"), eq ? "gleich, weil beide Tempos gleich sind" : hmOk ? '<b class="mo-okt">✓ richtig</b>' : '<b class="mo-badt">✗ falsch</b>');
-      tAM.set(fmt(T.am, 2) + unitHtml("km/h"), eq ? "gleich, weil beide Tempos gleich sind" : hmOk ? '<b class="mo-badt">✗ falsch</b>' : '<b class="mo-okt">✓ richtig</b>');
+      tHM.set(fmt(T.hm, 2) + unitHtml("km/h"), eq ? "gleich, weil beide Tempos gleich sind" : '<b class="mo-okt">✓ richtig</b>');
+      tAM.set(fmt(T.am, 2) + unitHtml("km/h"), eq ? "gleich, weil beide Tempos gleich sind" : '<b class="mo-badt">✗ falsch</b>');
       var eqs = function (v) { return (isRounded(v, 2) ? "≈ " : "= ") + fmt(v, 2); };
-      if (!zeit) {
-        sayP.textContent = fmt(T.dist, 2) + " km in " + durTxt(T.time) + " " + eqs(T.avg) + " km/h. Das harmonische Mittel 2 ÷ (1/" +
-          fmt(T.v1, 2) + " + 1/" + fmt(T.v2, 2) + ") " + eqs(T.hm) + " liefert genau das.";
-        if (eq) why.textContent = "Hin und zurück gleich schnell: Dann sind beide Mittel gleich. Stell zwei verschiedene Tempos ein!";
-        else {
-          var slow = Math.min(T.v1, T.v2), fast = Math.max(T.v1, T.v2);
-          why.innerHTML = "<strong>Warum nicht " + fmt(T.am, 2) + "?</strong> Mit " + fmt(slow, 2) + " km/h bist du " + durTxt(st.km / slow) +
-            " unterwegs, mit " + fmt(fast, 2) + " km/h nur " + durTxt(st.km / fast) + ". Das langsame Tempo zählt also länger mit und drückt den Schnitt. " +
-            "Die Strecke ändert daran übrigens nichts: Probier den Regler aus.";
-        }
-      } else {
-        sayP.textContent = "In " + durTxt(st.hours) + " mit " + fmt(T.v1, 2) + " km/h schaffst du " + fmt(T.d1, 2) + " km, in " + durTxt(st.hours) +
-          " mit " + fmt(T.v2, 2) + " km/h " + fmt(T.d2, 2) + " km. Zusammen " + fmt(T.dist, 2) + " km in " + durTxt(T.time) + " " + eqs(T.avg) +
-          " km/h. Hier stimmt das arithmetische Mittel (" + fmt(T.v1, 2) + " + " + fmt(T.v2, 2) + ") ÷ 2 " + eqs(T.am) + ".";
-        why.textContent = eq ? "Beide Tempos gleich: Dann sind beide Mittel gleich." : "Jetzt fährst du gleich lange langsam und schnell. Darum zählt jedes Tempo gleich viel.";
+      sayP.textContent = fmt(T.dist, 2) + " km in " + durTxt(T.time) + " " + eqs(T.avg) + " km/h. Das harmonische Mittel 2 ÷ (1/" +
+        fmt(T.v1, 2) + " + 1/" + fmt(T.v2, 2) + ") " + eqs(T.hm) + " liefert genau das.";
+      if (eq) why.textContent = "Hin und zurück gleich schnell: Dann sind beide Mittel gleich. Stell zwei verschiedene Tempos ein!";
+      else {
+        var slow = Math.min(T.v1, T.v2), fast = Math.max(T.v1, T.v2);
+        why.innerHTML = "<strong>Warum nicht " + fmt(T.am, 2) + "?</strong> Mit " + fmt(slow, 2) + " km/h bist du " + durTxt(st.km / slow) +
+          " unterwegs, mit " + fmt(fast, 2) + " km/h nur " + durTxt(st.km / fast) + ". Das langsame Tempo zählt also länger mit und drückt den Schnitt. " +
+          "Die Strecke ändert daran übrigens nichts: Probier den Regler aus.";
       }
-      extra.querySelector(".mo-extra-txt").textContent = "Es kommt darauf an, was fest ist. Ist die Strecke fest (km steht oben in km/h), " +
-        "nimmst du das harmonische Mittel. Das steht auf Folie 120. Ist dagegen die Zeit fest (h steht unten), nimmst du das arithmetische Mittel.";
       fHM.innerHTML = tex(hmTex(T.v1, T.v2));
       fAM.innerHTML = tex(amSpeedTex(T.v1, T.v2));
       timeChart.redraw();
@@ -1256,12 +1190,12 @@
     function drawTime(W) {
       var T = cur;
       if (!T) return;
-      var zeit = T.mode === "zeit", H = 136, l = 8, rr = W - 8;
+      var H = 136, l = 8, rr = W - 8;
       var svg = newSvg(timeBox, W, H, "");
       var X = LM.svg.scale(0, T.time, l, rr);
       var rowsDef = [
-        { y: 16, lab: (zeit ? "Abschnitt 1: " + durTxt(T.t1) + " mit " : "Hinweg: " + fmt(T.d1, 2) + " km mit ") + fmt(T.v1, 2) + " km/h", a: 0, b: T.t1, inner: zeit ? fmt(T.d1, 2) + " km" : durTxt(T.t1), cls: "mo-bar1" },
-        { y: 66, lab: (zeit ? "Abschnitt 2: " + durTxt(T.t2) + " mit " : "Rückweg: " + fmt(T.d2, 2) + " km mit ") + fmt(T.v2, 2) + " km/h", a: T.t1, b: T.time, inner: zeit ? fmt(T.d2, 2) + " km" : durTxt(T.t2), cls: "mo-bar2" }
+        { y: 16, lab: "Hinweg: " + fmt(T.d1, 2) + " km mit " + fmt(T.v1, 2) + " km/h", a: 0, b: T.t1, inner: durTxt(T.t1), cls: "mo-bar1" },
+        { y: 66, lab: "Rückweg: " + fmt(T.d2, 2) + " km mit " + fmt(T.v2, 2) + " km/h", a: T.t1, b: T.time, inner: durTxt(T.t2), cls: "mo-bar2" }
       ];
       rowsDef.forEach(function (r, i) {
         txt(svg, l, r.y, r.lab, { class: "mo-bar-lab", "text-anchor": "start" });
@@ -1285,7 +1219,6 @@
     function drawSpeed(W) {
       var T = cur;
       if (!T) return;
-      var zeit = T.mode === "zeit";
       var axisY = 72, H = axisY + 62, l = 14, rr = W - 14;
       var svg = newSvg(speedBox, W, H, "");
       var X = LM.svg.scale(0, 150, l, rr);
@@ -1296,14 +1229,13 @@
         if (major) txt(svg, X(v), axisY + 19, v === 150 ? "150 km/h" : String(v), { class: "tick", "text-anchor": v === 150 ? "end" : v === 0 ? "start" : "middle" });
       }
       var xh = X(T.hm), xa = X(T.am);
-      var hmRight = !zeit, eq = Math.abs(T.v1 - T.v2) < 1e-9;
+      var eq = Math.abs(T.v1 - T.v2) < 1e-9;
       svgEl("line", { class: "mo-ln mo-ln-trim", x1: xh, x2: xh, y1: 22, y2: axisY }, svg);
       svgEl("line", { class: "mo-ln mo-ln-mean", x1: xa, x2: xa, y1: axisY, y2: axisY + 30 }, svg);
       svgEl("polygon", { class: "mo-tri", points: xa + "," + (axisY + 3) + " " + (xa - 6) + "," + (axisY + 13) + " " + (xa + 6) + "," + (axisY + 13) }, svg);
       // die beiden Tempos als Punkte
-      var labA = zeit ? "erst " : "Hinweg ", labB = zeit ? "dann " : "Rückweg ";
-      var sp = [{ v: T.v1, lab: labA + fmt(T.v1, 2) }, { v: T.v2, lab: labB + fmt(T.v2, 2) }];
-      if (eq) sp = [{ v: T.v1, lab: (zeit ? "beide " : "hin und zurück ") + fmt(T.v1, 2) }];
+      var sp = [{ v: T.v1, lab: "Hinweg " + fmt(T.v1, 2) }, { v: T.v2, lab: "Rückweg " + fmt(T.v2, 2) }];
+      if (eq) sp = [{ v: T.v1, lab: "hin und zurück " + fmt(T.v1, 2) }];
       var labels = sp.map(function (s) {
         svgEl("circle", { class: "mo-sp-pt", cx: X(s.v), cy: axisY, r: 5 }, svg);
         return txt(svg, X(s.v), axisY - 11, s.lab, { class: "mo-sp-ptlbl mo-halo", "text-anchor": "middle" });
@@ -1333,17 +1265,16 @@
         if (s[1] > W - 2) put(t, W - 2, "end");
       });
       var pH = makePill(svg, "mo-pill-hm"), pA = makePill(svg, "mo-pill-am");
-      var okTag = eq ? "" : hmRight ? " (richtig)" : " (falsch)", okTagA = eq ? "" : hmRight ? " (falsch)" : " (richtig)";
-      pH.set([["harmonisches Mittel " + fmt(T.hm, 2) + " km/h", ""], [okTag, hmRight ? "mo-okt" : "mo-badt"]], xh, 12, 2, W - 2);
-      pA.set([["arithmetisches Mittel " + fmt(T.am, 2) + " km/h", ""], [okTagA, hmRight ? "mo-badt" : "mo-okt"]], xa, axisY + 41, 2, W - 2);
+      var okTag = eq ? "" : " (richtig)", okTagA = eq ? "" : " (falsch)";
+      pH.set([["harmonisches Mittel " + fmt(T.hm, 2) + " km/h", ""], [okTag, "mo-okt"]], xh, 12, 2, W - 2);
+      pA.set([["arithmetisches Mittel " + fmt(T.am, 2) + " km/h", ""], [okTagA, "mo-badt"]], xa, axisY + 41, 2, W - 2);
       svg.setAttribute("aria-label", "Tempo-Achse von 0 bis 150 km/h. Tempos " + fmt(T.v1, 2) + " und " + fmt(T.v2, 2) +
-        ". Harmonisches Mittel " + fmt(T.hm, 2) + ", arithmetisches Mittel " + fmt(T.am, 2) + ". Richtig ist hier das " +
-        (hmRight ? "harmonische" : "arithmetische") + " Mittel.");
+        ". Harmonisches Mittel " + fmt(T.hm, 2) + ", arithmetisches Mittel " + fmt(T.am, 2) + ". Richtig ist hier das harmonische Mittel.");
     }
 
     var timeChart = LM.svg.responsive(timeBox, function (W) { if (cur) drawTime(W); });
     var speedChart = LM.svg.responsive(speedBox, function (W) { if (cur) drawSpeed(W); });
-    setMode("km");
+    update();
     whenFonts(function () { timeChart.redraw(); speedChart.redraw(); });
   });
 })(typeof window !== "undefined" ? window : globalThis);

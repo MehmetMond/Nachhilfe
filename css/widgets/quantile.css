@@ -248,7 +248,6 @@
 .qx-expl { min-width: 0; }
 .qx-list { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; font-size: 0.96rem; }
 .qx-list .katex { font-size: 1em; }
-.qx-hinge { font-size: 0.94rem; }
 
 /* Selbst bauen */
 .qx-task { font-size: 1rem; }

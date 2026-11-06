@@ -5,7 +5,7 @@
  *                      n · p, Fallunterscheidung, Ergebnis, Probe mit der Definition (Folie 100)
  *                      und R (type = 2 gegen den Standard, Folie 103).
  *   boxplot-builder    Fünf Zahlen und Boxplot (Folien 105–109) mit range = 0 / 1 / 1.5,
- *                      Hinweis auf die Tukey-Hinges von R und Übungsmodus „Selbst bauen“.
+ *                      und Übungsmodus „Selbst bauen“.
  *
  * Gerechnet wird nur mit LM.stats, Zahlen kommen aus LM.fmt, Formeln aus LM.tex.
  * Die reinen Hilfsfunktionen stehen in `core` und werden in Node getestet:
@@ -221,9 +221,6 @@
     } else if (is(s[info.k - 1]) || is(s[info.k])) {
       return hit("one", npTxt + " ist eine ganze Zahl. Dann brauchst du das Mittel aus Platz " + info.k + " und Platz " + (info.k + 1) + ".");
     }
-    if (is(S.hinges(s)[lower ? 1 : 3])) {
-      return hit("hinge", "So legt boxplot() in R die Box (Tukey-Hinges). Für die Klausur gilt die Quantil-Regel von Folie 101.");
-    }
     if (is(S.quantileType7(s, p))) {
       return hit("type7", "Das wäre R ohne type = 2. In der Vorlesung gilt die Regel von Folie 101.");
     }
@@ -437,56 +434,6 @@
     return '<ul class="qx-list">' + items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ul>";
   }
 
-  // So zeichnet R boxplot() wirklich (boxplot.stats): Grenzen = Hinges ∓ range · (Hinge-Abstand),
-  // Whisker bis zum äußersten Wert innerhalb, Werte außerhalb sind Punkte. Nur zum Vergleich mit der Folien-Regel.
-  function rBoxStats(xs, range) {
-    var s = LM.stats.sorted(xs), n = s.length;
-    if (!n) return null;
-    var h = LM.stats.hinges(s);
-    if (!range) return { lo: s[0], hi: s[n - 1], out: [], fences: null };
-    var d = h[3] - h[1], lf = h[1] - range * d, uf = h[3] + range * d;
-    var inside = s.filter(function (v) { return v >= lf - EPS && v <= uf + EPS; });
-    return {
-      lo: inside.length ? inside[0] : h[1], hi: inside.length ? inside[inside.length - 1] : h[3],
-      out: s.filter(function (v) { return v < lf - EPS || v > uf + EPS; }), fences: [lf, uf]
-    };
-  }
-
-  // Satz, falls R wegen der Hinges andere Whisker oder Ausreißer zeichnet als die Regel von Folie 108 ("" sonst)
-  function rWhiskerDiff(xs, range) {
-    if (!range) return "";
-    var b = LM.stats.boxplot(xs, range), r = rBoxStats(xs, range);
-    function has(list, v) { return list.some(function (u) { return Math.abs(u - v) < EPS; }); }
-    var added = uniq(r.out.filter(function (v) { return !has(b.out, v); }));
-    var loDiff = Math.abs(r.lo - b.lo) > EPS, hiDiff = Math.abs(r.hi - b.hi) > EPS;
-    // Mit Hinges ist die Box nie breiter als mit Quartilen: R zeigt also höchstens mehr Ausreißer und kürzere Whisker.
-    if (!added.length && !loDiff && !hiDiff) return "";
-    var parts = [];
-    if (added.length) parts.push("zusätzlich " + listAnd(added) + " als Ausreißer");
-    function wh(which, v) { return "den " + which + " Whisker nur bis " + num(v); }
-    if (loDiff) parts.push(wh("unteren", r.lo));
-    if (hiDiff) parts.push(wh("oberen", r.hi));
-    var txt = parts.length < 2 ? parts[0] : parts.slice(0, -1).join(", ") + " und " + parts[parts.length - 1];
-    return "In R zeichnet <code>boxplot()</code> hier " + txt + ", weil R die Grenzen mit den Hinges rechnet: " +
-      num(r.fences[0]) + " und " + num(r.fences[1]) + ".";
-  }
-
-  // Hinweis Tukey-Hinges (nur bei n = 3, 7, 11, … können sie von den Quartilen abweichen).
-  // range (optional, > 0): dann auch sagen, wenn R deshalb andere Whisker oder Ausreißer zeichnet.
-  function hingeHtml(xs, range) {
-    var s = LM.stats.sorted(xs), n = s.length;
-    if (n % 4 !== 3) return "";
-    var h = LM.stats.hinges(s), q = LM.stats.quartiles(s);
-    var same = Math.abs(h[1] - q.q1) < EPS && Math.abs(h[3] - q.q3) < EPS;
-    var wd = same ? "" : rWhiskerDiff(s, range);
-    return "<strong>" + (wd ? "Unterschied zu R:" : "Kleiner Unterschied zu R:") + "</strong> Bei n = " + n +
-      " legt <code>boxplot()</code> die Box an die sogenannten Tukey-Hinges. Du siehst sie mit <code>fivenum(x)</code> (R-Befehl nicht auf den Folien). " +
-      (same ? "Hier kommt zufällig dasselbe heraus: " + num(h[1]) + " und " + num(h[3]) + "."
-        : "Das wären hier " + num(h[1]) + " und " + num(h[3]) + " statt Q1 = " + num(q.q1) + " und Q3 = " + num(q.q3) + ".") +
-      (wd ? " " + wd : "") +
-      " In der Klausur rechnest du immer mit den Quartilen aus der Vorlesung.";
-  }
-
   // Wo liegt die Grenze nach n · p Werten?
   // Ganze Zahl k → genau geschafft: Grenze in der Lücke zwischen Platz k und k + 1 (violette Linie).
   // Kommazahl    → halbe Werte gibt es nicht: abzählen, ab welchem Platz die Mindestanzahl erreicht ist.
@@ -524,7 +471,7 @@
     diagnose: diagnose, practiceVerdict: practiceVerdict, practiceMessage: practiceMessage,
     randomQuantileData: randomQuantileData, randomBoxData: randomBoxData, practiceData: practiceData, shuffle: shuffle,
     placeLabels: placeLabels, labelPlates: labelPlates, swarm: swarm, domainFor: domainFor, boxDomain: boxDomain, boxModel: boxModel, lerpModel: lerpModel,
-    describeBox: describeBox, rangeHtml: rangeHtml, hingeHtml: hingeHtml, rBoxStats: rBoxStats, rWhiskerDiff: rWhiskerDiff
+    describeBox: describeBox, rangeHtml: rangeHtml
   };
   if (typeof module !== "undefined" && module.exports) module.exports = core;
   if (typeof document === "undefined" || !LM.widget || !LM.h) return;
@@ -1231,10 +1178,8 @@
     var chart = makeBoxChart(paneE);
     var legend = LM.h("div", { class: "qx-legend" });
     var expl = LM.h("div", { class: "qx-expl", attrs: { "aria-live": "polite" } });
-    var hingeNote = LM.h("div", { class: "callout callout-extra qx-hinge", attrs: { hidden: "" } });
     paneE.appendChild(legend);
     paneE.appendChild(expl);
-    paneE.appendChild(hingeNote);
 
     function pick(key) {
       if (key === st.key && key !== "rand") return;
@@ -1314,9 +1259,6 @@
             listAnd(uniq(m.out)) + " außerhalb der Grenzen. R zeichnet sie als Ausreißer."
           : "In Aufgabe 10 a) zeichnet R mit <code>boxplot(x)</code>, also mit range = 1.5. Schalte um und vergleiche.";
       } else slideNote.hidden = true;
-      var hh = hingeHtml(s, st.range);
-      hingeNote.hidden = !hh;
-      hingeNote.innerHTML = hh ? "<p>" + hh + "</p>" : "";
     }
 
     /* ---------- Selbst bauen ---------- */
@@ -1362,8 +1304,6 @@
     sol.appendChild(LM.h("p", { class: "qx-sec-title", text: "Lösung" }));
     sol.appendChild(solText);
     var solTiles = fiveTiles(sol);
-    var solHinge = LM.h("p", { class: "qx-note" });
-    sol.appendChild(solHinge);
 
     paneP.appendChild(LM.h("p", { class: "qx-task", html: "Bestimme die fünf Zahlen für den Boxplot. <strong>Achtung:</strong> Die Werte sind noch nicht sortiert." }));
     paneP.appendChild(pCardsHost);
@@ -1476,9 +1416,6 @@
       sortP(markSol);
       solText.innerHTML = "<strong>Sortiert:</strong> " + s.map(num).join("; ") + " (n = " + s.length + ")";
       solTiles.set(s);
-      var hh = hingeHtml(s);
-      solHinge.innerHTML = hh;
-      solHinge.hidden = !hh;
       sol.hidden = false;
       if (after.hidden) {
         after.hidden = false;

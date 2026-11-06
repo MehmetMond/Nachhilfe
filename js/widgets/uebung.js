@@ -66,15 +66,11 @@
     var mt = S.meanTable(values, h);
     var mode = S.modeInfo(xs), med = S.medianInfo(xs), mean = S.meanInfo(xs);
     var q1 = S.quantileInfo(xs, 0.25), q3 = S.quantileInfo(xs, 0.75);
-    // kumuliert wie R cumsum(f): f_j = h_j / n nacheinander aufsummiert
-    var cum = [], c = 0;
-    table.forEach(function (r) { c += r.h / n; cum.push(c); });
     return {
       n: n, rows: NOTEN_ROWS, sorted: S.sorted(xs), values: values, h: h,
       f: table.map(function (r) { return r.f; }),
       H: table.map(function (r) { return r.H; }),
       F: table.map(function (r) { return r.F; }),
-      cumsum: cum,
       blocks: table.map(function (r) { return { value: r.value, from: r.from, to: r.to }; }),
       products: mt.products, sum: mt.sum,
       mode: mode.value, modeCount: mode.maxCount,
@@ -93,7 +89,6 @@
     var mean = S.meanInfo(xs), med = S.medianInfo(xs);
     var q1 = S.quantileInfo(xs, 0.25), q3 = S.quantileInfo(xs, 0.75);
     var b15 = S.boxplot(xs, 1.5), b0 = S.boxplot(xs, 0), sk = S.skewInfo(xs, 0.25);
-    var hin = S.hinges(xs);
     function pos(v) { return s.indexOf(v) + 1; }
     var noOutXs = xs.filter(function (v) { return b15.out.indexOf(v) < 0; });
     var noMed = S.medianInfo(noOutXs), noMean = S.mean(noOutXs);
@@ -113,7 +108,6 @@
       whiskerLo: b15.lo, whiskerHi: b15.hi, whiskerLoPos: pos(b15.lo), whiskerHiPos: pos(b15.hi),
       out: b15.out, outPositions: b15.out.map(pos),
       range0: { lo: b0.lo, hi: b0.hi },
-      rStats: [b15.lo, hin[1], hin[2], hin[3], b15.hi],
       diff: sk.diff, direction: sk.diffDirection, gp: sk.gp,
       noOut: { n: noOutXs.length, sum: S.sum(noOutXs), mean: noMean, median: noMed.value, medianPositions: noMed.positions, diff: noMean - noMed.value },
       trim: { 2: trim(0.02), 5: trim(0.05), 10: trim(0.1), 20: trim(0.2), 25: trim(0.25) },
@@ -210,10 +204,8 @@
       ["f <- h / sum(h)", "relative Häufigkeiten f_j = h_j / n (Folie 41)"],
       ["f", "anzeigen"],
       ['plot(f, type = "h", lwd = 4, xlab = "Note", ylab = "rel. Haeufigkeit")', "Stabdiagramm (Folie 42)"],
-      ["cumsum(f)", "kumulierte Häufigkeiten F_j, Folie 49–50 (R-Befehl nicht auf den Folien)"],
       ["F <- ecdf(x)", "empirische Verteilungsfunktion (Folie 52)"],
       ['plot(F, xlab = "Note", ylab = "F(x)")', "als Treppe zeichnen (Folie 52)"],
-      ["names(which.max(h))", "Modus: Note mit der größten Anzahl, Folie 92 (R-Befehl nicht auf den Folien)"],
       ["median(x)", "Median (Folie 96)"],
       ["mean(x)", "arithmetisches Mittel (Folie 112)"],
       ["quantile(x, probs = c(0.25, 0.75), type = 2)", "0,25- und 0,75-Quantil nach Folie 101 (Folie 103)"]
@@ -221,8 +213,6 @@
     var out = [
       { cmd: "h", lines: ["x"].concat(rNamed(names, a.h)) },
       { cmd: "f", lines: ["x"].concat(rNamed(names, a.f)) },
-      { cmd: "cumsum(f)", lines: rNamed(names, a.cumsum) },
-      { cmd: "names(which.max(h))", lines: ['[1] "' + a.mode + '"'] },
       { cmd: "median(x)", lines: [rVec([a.median])] },
       { cmd: "mean(x)", lines: [rVec([a.mean])] },
       { cmd: "quantile(x, probs = c(0.25, 0.75), type = 2)", lines: rNamed(["25%", "75%"], [a.q1, a.q3]) }
@@ -237,27 +227,18 @@
       "Zeile 6: zusammen 60 Zeiten in ms"], function (v) { return v.toFixed(1); }, ", ").concat([
       ['boxplot(x, horizontal = TRUE, xlab = "Reaktionszeit [ms]")', "Boxplot, R-Standard range = 1.5 (Folie 108)"],
       ['boxplot(x, horizontal = TRUE, range = 0, xlab = "Reaktionszeit [ms]")', "Whisker bis Min und Max (Folie 107)"],
-      ["boxplot.stats(x)$stats", "die 5 Zahlen, die R zeichnet (R-Befehl nicht auf den Folien)"],
-      ["boxplot.stats(x)$out", "die Ausreißer, die R als Punkte zeichnet (R-Befehl nicht auf den Folien)"],
       ["quantile(x, probs = c(0.25, 0.5, 0.75), type = 2)", "Quartile nach Folie 101"],
       ["mean(x)", "arithmetisches Mittel (Folie 112)"],
       ["median(x)", "Median (Folie 96)"],
       ["mean(x) - median(x)", "größer als 0: tendenziell rechtsschief (Folie 140)"],
-      ["y <- x[x < 500]", "ohne die zwei Ausreißer (R-Befehl nicht auf den Folien)"],
-      ["round(mean(y), 2)", "Mittel ohne Ausreißer, auf 2 Stellen"],
-      ["median(y)", "Median ohne Ausreißer"],
-      ["round(mean(x, trim = 0.05), 2)", "getrimmtes Mittel, Folie 116: 5 % je Seite weg, k = 3 (R-Befehl nicht auf den Folien)"],
-      ["round(mean(x, trim = 0.1), 2)", "getrimmtes Mittel, Folie 116: 10 % je Seite weg, k = 6 (R-Befehl nicht auf den Folien)"]
+      ["round(mean(x, trim = 0.05), 2)", "getrimmtes Mittel, Folie 116: 5 % je Seite weg, k = 3"],
+      ["round(mean(x, trim = 0.1), 2)", "getrimmtes Mittel, Folie 116: 10 % je Seite weg, k = 6"]
     ]);
     var out = [
-      { cmd: "boxplot.stats(x)$stats", lines: [rVec(a.rStats)] },
-      { cmd: "boxplot.stats(x)$out", lines: [rVec(a.out)] },
       { cmd: "quantile(x, probs = c(0.25, 0.5, 0.75), type = 2)", lines: rNamed(["25%", "50%", "75%"], [a.q1, a.median, a.q3]) },
       { cmd: "mean(x)", lines: [rVec([a.mean])] },
       { cmd: "median(x)", lines: [rVec([a.median])] },
       { cmd: "mean(x) - median(x)", lines: [rVec([a.diff])] },
-      { cmd: "round(mean(y), 2)", lines: [rVec([round(a.noOut.mean, 2)])] },
-      { cmd: "median(y)", lines: [rVec([a.noOut.median])] },
       { cmd: "round(mean(x, trim = 0.05), 2)", lines: [rVec([round(a.trim[5].value, 2)])] },
       { cmd: "round(mean(x, trim = 0.1), 2)", lines: [rVec([round(a.trim[10].value, 2)])] }
     ];
@@ -294,7 +275,6 @@
       ["f <- c(0.55, 0.46, 0.35, 0.29, 0.25, 0.21)", "Fehleranteile f_0 bis f_5"],
       ["x <- f[2:6] / f[1:5]", "x_i = f_i / f_(i-1); R zählt ab 1, f[1] ist f_0"],
       ["round(x, 4)", "die 5 Lernfortschritte, auf 4 Stellen gerundet"],
-      ["prod(x)", "ihr Produkt, kürzt sich zu f_5 / f_0 (R-Befehl nicht auf den Folien)"],
       ["geometric_mean <- function(x) {", "geometrisches Mittel selbst bauen (Folie 118)"],
       ["  exp(mean(log(x)))", "e hoch (Mittel der Logarithmen)"],
       ["}", "Ende der Funktion"],
@@ -304,7 +284,6 @@
     ];
     var out = [
       { cmd: "round(x, 4)", lines: [rVec(a.x4)] },
-      { cmd: "prod(x)", lines: [rVec([a.product])] },
       { cmd: "geometric_mean(x)", lines: [rVec([a.gm])] },
       { cmd: "mean(x)", lines: [rVec([a.am])] },
       { cmd: "round(f[1] * geometric_mean(x)^(1:5), 4)", lines: [rVec(a.pred4)] }
@@ -397,7 +376,7 @@
     copyBtn.addEventListener("click", function () { copyText(codeEl, msg); });
     return H("section", { class: "ue-r", attrs: { "aria-label": "Mit R nachprüfen" } }, [
       H("div", { class: "ue-r-head" }, [H("h4", { text: "Mit R nachprüfen" }), copyBtn]),
-      H("p", { class: "ue-r-sub", html: "Kopier den Code in RStudio und führ ihn aus. Hinter jeder Zeile steht, was sie tut. Befehle mit „(R-Befehl nicht auf den Folien)“ musst du in der Klausur nicht kennen. Die Rechnung dahinter schon." }),
+      H("p", { class: "ue-r-sub", html: "Kopier den Code in RStudio und führ ihn aus. Hinter jeder Zeile steht, was sie tut." }),
       H("pre", { class: "ue-pre", attrs: { tabindex: "0", "aria-label": "R-Code" } }, [codeEl]),
       msg,
       H("details", { class: "ue-rout" }, [
@@ -1620,12 +1599,12 @@
                 "Nur " + fm(a.out[0], 1) + " und " + fm(a.out[1], 1) + " liegen darüber. Der größte Wert darunter ist " + fm(a.whiskerHi, 1) + " (Platz " + a.whiskerHiPos + ")."
               ],
               okText: "Richtig! Genau so zeichnet R den Boxplot.",
-              why: "<p>Das sind genau die Zahlen, die R mit <code>boxplot.stats(x)</code> ausgibt. Bei n = 60 legt R die Box genau auf die Quartile von Folie 101.</p>",
+              why: "<p>Mit genau diesen Zahlen zeichnet R den Boxplot. Bei n = 60 legt R die Box genau auf die Quartile von Folie 101.</p>",
               solution: function () {
                 return "<p>Untere Grenze " + fm(a.fences[0], 3) + ": Kein Wert liegt darunter. Der Whisker geht bis zum Minimum " + fm(a.whiskerLo, 1) + ".</p>" +
                   "<p>Obere Grenze " + fm(a.fences[1], 3) + ": " + fm(a.out[0], 1) + " (Platz " + a.outPositions[0] + ") und " + fm(a.out[1], 1) + " (Platz " + a.outPositions[1] + ") liegen darüber. Das sind die Ausreißer. " +
                   "Der größte Wert innerhalb ist " + fm(a.whiskerHi, 1) + " (Platz " + a.whiskerHiPos + "). Bis dorthin geht der obere Whisker.</p>" +
-                  ref("Folie 108: Whisker bei range > 0 · in R: <code>boxplot.stats(x)$stats</code> und <code>$out</code> (R-Befehle nicht auf den Folien)");
+                  ref("Folie 108: Whisker bei range > 0");
               }
             }
           ],
@@ -1794,7 +1773,7 @@
                   "<p>Gestrichen unten: " + t.low.map(function (v) { return fm(v, 1); }).join("; ") + ". Oben: " + t.high.map(function (v) { return fm(v, 1); }).join("; ") + ".</p>" +
                   TD("\\bar{x}_{\\text{getr.}} = \\frac{" + tn(t.sum, 1) + "}{" + t.m + "} = " + tn(t.value)) +
                   "<p>Zum Vergleich der andere Anteil: " + (c === 10 ? "5\u00a0%: k = " + a.trim[5].k + ", " + a.trim[5].m + " Werte, " + fm(a.trim[5].value) : "10\u00a0%: k = " + a.trim[10].k + ", " + a.trim[10].m + " Werte, " + fm(a.trim[10].value)) + " ms.</p>" +
-                  ref("Folie 116: getrimmtes Mittel · in R: <code>mean(x, trim = " + (c === 10 ? "0.1" : "0.05") + ")</code> (R-Befehl nicht auf den Folien) · siehe auch <a href=\"#weitere\">Kapitel 7</a>");
+                  ref("Folie 116: getrimmtes Mittel · in R: <code>mean(x, trim = " + (c === 10 ? "0.1" : "0.05") + ")</code> · siehe auch <a href=\"#weitere\">Kapitel 7</a>");
               }
             }
           ],
@@ -2328,18 +2307,10 @@
           visual: function (box, sheet) {
             amOn = !!sheet.ui("am");
             var btn = H("button", { class: "chip", attrs: { type: "button", "aria-pressed": String(amOn) }, text: "Zum Vergleich: arithmetisches Mittel" });
-            var note = H("div", { class: "callout callout-extra", attrs: { role: "status", "aria-live": "polite" } });
-            function upd() {
-              note.hidden = !amOn;
-              note.innerHTML = '<p class="callout-title">Extra</p><p>Mit dem arithmetischen Mittel der Faktoren (' + fm(a.am, 4) + ") wäre die Vorhersage für Durchgang 5 " +
-                T("0{,}55 \\cdot " + tn(a.am, 4) + "^5 = " + tn(a.predAM[4], 4)) + ", nicht 0,21. Hier ist der Unterschied klein, aber nur das geometrische Mittel trifft genau.</p>";
-            }
             var chart = predChart(box, a, function () { return amOn; });
-            btn.addEventListener("click", function () { amOn = !amOn; btn.setAttribute("aria-pressed", String(amOn)); sheet.ui("am", amOn); upd(); chart.redraw(); });
+            btn.addEventListener("click", function () { amOn = !amOn; btn.setAttribute("aria-pressed", String(amOn)); sheet.ui("am", amOn); chart.redraw(); });
             box.appendChild(H("p", { class: "ue-legend2", html: '<span class="ue-lg ue-lg-obs">beobachtet</span><span class="ue-lg ue-lg-pred">Vorhersage mit GM</span>' }));
             box.appendChild(H("div", { class: "ue-vbar" }, [btn]));
-            box.appendChild(note);
-            upd();
           }
         }
       ],

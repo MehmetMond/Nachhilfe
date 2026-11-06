@@ -64,7 +64,6 @@
 /* R-Code */
 .mo-r { display: grid; gap: 0.45rem; min-width: 0; }
 .mo-r-title { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--ink-2); }
-.mo-r-note { font-weight: 600; color: var(--muted); }
 .mo-pre {
   margin: 0; max-width: 100%; overflow-x: auto; padding: 0.7rem 0.9rem; border-radius: var(--r-sm);
   background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink);
@@ -194,12 +193,6 @@
 
 /* ---------- 3. Harmonisches Mittel ---------- */
 
-.mo-modebtn { gap: 0.5rem; }
-.mo-xtag {
-  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 0.05rem 0.4rem; border-radius: 99px; background: var(--warn-soft); color: var(--warn);
-}
-.mo-modebtn[aria-pressed="true"] .mo-xtag { background: var(--accent-ink); color: var(--accent); }
 .mo-chart-title { font-family: var(--font-display); font-weight: 750; font-size: 0.95rem; color: var(--ink-2); margin-bottom: -0.4rem; }
 .mo-bar-lab { fill: var(--ink-2); font-family: var(--font-display); font-size: 12.5px; font-weight: 700; }
 .mo-bar { stroke-width: 1.5; }
@@ -212,4 +205,3 @@
 .mo-sp-pt { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
 .mo-sp-ptlbl { fill: var(--ink-2); font-family: var(--font-display); font-size: 12px; font-weight: 700; }
 .mo-hsay { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; padding: 0.7rem 0.95rem; border-radius: var(--r); border: 1.5px solid var(--rule); background: var(--surface); }
-.mo-extra { margin: 0; }

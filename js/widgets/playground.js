@@ -413,14 +413,10 @@
       items.push({ cmt: "# so zeichnet R ohne range: Whisker höchstens 1,5 Quartilabstände lang", code: "boxplot(x, horizontal = TRUE)", out: [],
         note: "Wieder nur ein Bild. Werte außerhalb der Grenzen erscheinen als einzelne Punkte." });
     }
-    add({ gap: true, cmt: "# getrimmtes Mittel (Folie 116): 10 % unten und 10 % oben weg (R-Befehl nicht auf den Folien)", code: "mean(x, trim = 0.1)" },
-      num(core.rMean(S.trimInfo(xs, TRIM).kept), true));
     if (S.allPositive(xs)) {
-      add({ cmt: "# geometrisches Mittel (Folie 118)", code: "exp(mean(log(x)))" }, num(Math.exp(core.rMean(xs.map(Math.log))), false));
-      add({ cmt: "# harmonisches Mittel (Folie 120): n durch die Summe der Kehrwerte (R-Befehl nicht auf den Folien)", code: "1 / mean(1 / x)" },
-        num(1 / core.rMean(xs.map(function (v) { return 1 / v; })), false));
+      add({ gap: true, cmt: "# geometrisches Mittel (Folie 118)", code: "exp(mean(log(x)))" }, num(Math.exp(core.rMean(xs.map(Math.log))), false));
     } else {
-      items.push({ cmt: "# geometrisches und harmonisches Mittel gibt es nur, wenn alle Werte größer als 0 sind" });
+      items.push({ gap: true, cmt: "# geometrisches Mittel gibt es nur, wenn alle Werte größer als 0 sind" });
     }
     add({ gap: true, cmt: "# Schiefe: Mittel minus Median (Folie 150). Größer als 0 heißt rechtsschief.", code: "mean(x) - median(x)" },
       num(rmean - S.median(xs), true));
@@ -687,7 +683,7 @@
 
   /* ---------- Weitere Kennwerte (Folien 116–120, 140–142) ---------- */
 
-  // Getrimmtes Mittel wie R mean(x, trim = 0.1): an jedem Ende k = abgerundet n · 0,1 Werte weg
+  // Getrimmtes Mittel (Folie 116): an jedem Ende k = abgerundet n · 0,1 Werte weg
   core.stepsTrim = function (c) {
     var ti = c.sum.trim10, n = c.n, k = ti.k, m = ti.m, D = c.D, f = c.f, tn = core.tn, steps = [], cut = [], i;
     for (i = 1; i <= k; i++) cut.push(i);
@@ -697,7 +693,7 @@
         k ? [1, k, k + 1, n - k, n - k + 1, n] : null));
     var nt = n * TRIM;
     steps.push("<b>Abzählen, wie viele weg müssen.</b> " + fx("n \\cdot 0{,}1 = " + n + " \\cdot 0{,}1 = " + core.tn(nt, 1)) +
-      (core.exact(nt, 0) ? ", also " : ", abgerundet ") + fx("k = " + k) + ". So viele Werte streichst du an <b>jedem</b> Ende, genau wie R mit <code>mean(x, trim = 0.1)</code>.");
+      (core.exact(nt, 0) ? ", also " : ", abgerundet ") + fx("k = " + k) + ". So viele Werte streichst du an <b>jedem</b> Ende.");
     if (!k) {
       steps.push("<b>Nichts zu streichen.</b> Bei weniger als 10 Werten ist " + fx("n \\cdot 0{,}1") + " kleiner als 1, abgerundet also 0. " +
         "Das getrimmte Mittel ist dann das normale Mittel.");
@@ -784,9 +780,6 @@
     steps.push("<b>n durch diese Summe teilen.</b> " + fx("HM = \\dfrac{n}{\\sum 1/x_i} = \\dfrac{" + n + "}{" + tn(rs, rd) + "}" + (exact && rsExact ? " = " : " \\approx ") + tn(hi.value, D)));
     steps.push("<b>Passt es zu deinen Daten?</b> Sinnvoll ist das harmonische Mittel bei Raten mit festem Zähler, zum Beispiel km/h bei gleich langen Strecken " +
       "oder Preis pro Liter (Folie 120).");
-    var gm = c.sum.geometric.value, am = c.sum.mean.value;
-    steps.push("<b>Vergleich</b> (Extra, nicht auf den Folien). Für positive Werte gilt immer: harmonisches ≤ geometrisches ≤ arithmetisches Mittel. Hier: " +
-      fx(tn(hi.value, D) + " \\le " + tn(gm, D) + " \\le " + tn(am, D)) + ".");
     return { steps: steps, result: { text: f(hi.value), tex: "HM " + (exact ? "= " : "\\approx ") + tn(hi.value, D) } };
   };
 
@@ -841,56 +834,6 @@
         html: LM.tex(resTex) + ' <span class="pg-res-word">' + core.skewWord(dir) + "</span>"
       }
     };
-  };
-
-  // So zeichnet R boxplot() wirklich (boxplot.stats): Grenzen = Hinges ∓ range · (Hinge-Abstand),
-  // Whisker bis zum äußersten Wert innerhalb, Werte außerhalb sind Punkte. Nur zum Vergleich mit der Regel von Folie 108.
-  core.rBoxStats = function (xs, range) {
-    var s = LM.stats.sorted(xs), n = s.length;
-    if (!n) return null;
-    var h = LM.stats.hinges(s);
-    if (!range) return { lo: s[0], hi: s[n - 1], out: [], fences: null };
-    var d = h[3] - h[1], lf = h[1] - range * d, uf = h[3] + range * d;
-    var inside = s.filter(function (v) { return v >= lf - EPS && v <= uf + EPS; });
-    return {
-      lo: inside.length ? inside[0] : h[1], hi: inside.length ? inside[inside.length - 1] : h[3],
-      out: s.filter(function (v) { return v < lf - EPS || v > uf + EPS; }), fences: [lf, uf]
-    };
-  };
-
-  // Satz, falls R wegen der Hinges andere Whisker oder Ausreißer zeichnet als die Regel von Folie 108 ("" sonst)
-  core.rWhiskerDiff = function (c, range) {
-    if (!range) return "";
-    var b = LM.stats.boxplot(c.xs, range), r = core.rBoxStats(c.xs, range), f = c.f;
-    function has(list, v) { return list.some(function (u) { return Math.abs(u - v) < EPS; }); }
-    function uniqVals(list) { return list.filter(function (v, i) { return i === 0 || Math.abs(v - list[i - 1]) > EPS; }); }
-    var added = uniqVals(r.out.filter(function (v) { return !has(b.out, v); }));
-    var loDiff = Math.abs(r.lo - b.lo) > EPS, hiDiff = Math.abs(r.hi - b.hi) > EPS;
-    // Mit Hinges ist die Box nie breiter als mit Quartilen: R zeigt also höchstens mehr Ausreißer und kürzere Whisker.
-    if (!added.length && !loDiff && !hiDiff) return "";
-    var parts = [];
-    if (added.length) parts.push("zusätzlich " + und(added.map(f)) + " als Ausreißer");
-    function wh(which, v) { return "den " + which + " Whisker nur bis " + f(v); }
-    if (loDiff) parts.push(wh("unteren", r.lo));
-    if (hiDiff) parts.push(wh("oberen", r.hi));
-    var txt = parts.length < 2 ? parts[0] : parts.slice(0, -1).join(", ") + " und " + parts[parts.length - 1];
-    return "In R zeichnet <code>boxplot()</code> mit <code>range = " + (range === 1.5 ? "1.5" : String(range)) + "</code> hier " + txt +
-      ", weil R die Grenzen mit den Hinges rechnet: " + f(r.fences[0]) + " und " + f(r.fences[1]) + ".";
-  };
-
-  // Hinweis zu R: boxplot() legt die Box mit Tukey-Hinges. Nur bei n = 3, 7, 11, … kann das von den Quartilen abweichen.
-  // range (> 0): dann auch sagen, wenn R deshalb andere Whisker oder Ausreißer zeichnet.
-  core.hingeNote = function (c, range) {
-    if (c.n % 4 !== 3) return "";
-    var hg = LM.stats.hinges(c.xs), q1 = c.sum.q1.value, q3 = c.sum.q3.value, f = c.f;
-    var same = LM.near(hg[1], q1, 1e-9) && LM.near(hg[3], q3, 1e-9);
-    if (same) {
-      return "Bei n = " + I(c.n) + " nimmt <code>boxplot()</code> in R für die Box eigentlich die Tukey-Hinges statt der Quartile. Bei diesen Daten kommt zufällig dasselbe heraus.";
-    }
-    var wd = core.rWhiskerDiff(c, range);
-    return "Bei n = " + I(c.n) + " zeichnet R die Box etwas anders. <code>boxplot()</code> nimmt die Tukey-Hinges statt der Quartile: Box von " +
-      f(hg[1]) + " bis " + f(hg[3]) + " statt von " + f(q1) + " bis " + f(q3) + "." + (wd ? " " + wd : "") +
-      " In der Klausur rechnest du mit den Quartilen nach Folie 101.";
   };
 
   // Hinweise zu Sonderfällen der eingegebenen Daten
@@ -1089,7 +1032,6 @@
       '<span class="pg-lg"><svg viewBox="0 0 22 14"><path d="M11 1 L4 13 H18 Z" class="mk-mean"/></svg>Mittel, der Schwerpunkt</span>' +
       '<span class="pg-lg"><svg viewBox="0 0 22 14"><circle cx="11" cy="7" r="6" class="dot pg-dot-mod"/></svg>Modus</span>' });
     var boxNote = h("p", { class: "pg-box-note" });
-    var hingeNote = h("div", { class: "callout callout-tip pg-note", attrs: { hidden: "" } });
     var vizSec = h("section", { class: "pg-sec pg-viz", attrs: { "aria-label": "Punktdiagramm und Boxplot" } }, [
       h("div", { class: "pg-sec-head" }, [
         h("h4", { class: "pg-h", text: "Punktdiagramm mit Boxplot" }),
@@ -1098,7 +1040,7 @@
           h("div", { class: "seg pg-seg-code", attrs: { role: "group", "aria-labelledby": uid + "-rl" } }, rangeBtns)
         ])
       ]),
-      chartHost, legend, boxNote, hingeNote
+      chartHost, legend, boxNote
     ]);
 
     /* ---------- Ausgabe: sortierte Karten ---------- */
@@ -1355,9 +1297,6 @@
           (outs.length ? "Außerhalb: " + (outs.length > 8 ? joinVals(outs.slice(0, 8)) + " …" : joinVals(outs)) + ". Diese Werte sind einzelne Punkte, also mögliche Ausreißer."
             : "Kein Wert liegt außerhalb. Darum gibt es keine Ausreißer-Punkte.");
       }
-      var hn = core.hingeNote(c, state.range);
-      hingeNote.hidden = !hn;
-      hingeNote.innerHTML = hn ? "<p><b>Hinweis zu R.</b> " + hn + "</p>" : "";
     }
 
     function renderCards(c) {
@@ -1464,9 +1403,8 @@
       else if (k === "q3") fill("q3", "q", core.stepsQuantile(c, 0.75, "Q_3", "0{,}75"));
       else if (k === "iqr") fill("iqr", "q", core.stepsIqr(c));
       else if (k === "box") {
-        var b = core.stepsBox(c), hn = core.hingeNote(c, 1.5);
-        wayBodies.box.innerHTML = stepsHtml(b.steps) + (hn ? '<div class="callout callout-tip pg-note"><p><b>Hinweis zu R.</b> ' + hn + "</p></div>" : "") +
-          resultHtml("q", "Fünf Zahlen: " + LM.esc(b.result.text));
+        var b = core.stepsBox(c);
+        wayBodies.box.innerHTML = stepsHtml(b.steps) + resultHtml("q", "Fünf Zahlen: " + LM.esc(b.result.text));
       }
       else if (k === "trim") fill("trim", "mean", core.stepsTrim(c));
       else if (k === "gm") fill("gm", "mean", core.stepsGeo(c));

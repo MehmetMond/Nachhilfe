@@ -540,3 +540,19 @@ footer.site-foot .inner { max-width: 1240px; margin: 0 auto; display: grid; gap:
 }
 .version-link:hover { border-color: var(--accent); color: var(--accent-text); }
 @media print { .version-link { display: none; } }
+
+/* ---------- Grundformel-Kasten vor jeder Übung (Übungs-Version) ---------- */
+.grundformel {
+  display: grid; gap: 0.25rem; padding: 0.75rem 1rem; border-radius: var(--r);
+  background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.grundformel .gf-title {
+  margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 0.78rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent-text);
+}
+.grundformel .formula { padding: 0.25rem 0.1rem; }
+.grundformel .gf-text { margin: 0; font-family: var(--font-body); font-weight: 600; }
+.grundformel .formula { text-align: left; }
+.grundformel .formula .katex-display { margin: 0.1rem 0; text-align: left; }
+.grundformel .formula .katex-display > .katex { text-align: left; }
+@media (max-width: 420px) { .grundformel .formula .katex { font-size: 1em; } }
