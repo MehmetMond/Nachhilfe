@@ -1920,16 +1920,20 @@
      ===================================================================== */
 
   LM.widget("quiz", function (el) {
-    var N = TOPICS.length, PASS = 8;
+    // Nur Kapitel, die es auf dieser Seite gibt (die Übungs-Version kann z. B. ohne Übungsblatt sein).
+    var topics = TOPICS.filter(function (t) { return !document.querySelector || document.querySelector(t.href); });
+    if (!topics.length) topics = TOPICS.slice();
+    var N = topics.length, PASS = Math.round(N * 0.8);
+    var lastCh = topics.reduce(function (m, t) { return Math.max(m, t.ch); }, 0);
     LM.progress.define("quiz", "Abschlussquiz: mindestens " + PASS + " von " + N + " richtig");
     el.classList.add("widget", "qz-quiz");
     var quizHead = widgetHead(el, "Abschlussquiz", '<span class="w-badge">' + N + " Fragen</span>",
-      "Eine Frage aus jedem Kapitel von 2 bis 11.");
+      "Eine Frage aus jedem Kapitel von 2 bis " + lastCh + ".");
     quizHead.appendChild(goalLine("quiz", "mindestens " + PASS + " von " + N + " richtig in einem Durchgang."));
     var stage = h("div", { class: "qz-stage" });
     el.appendChild(stage);
     var topicById = {};
-    TOPICS.forEach(function (t) { topicById[t.id] = t; });
+    topics.forEach(function (t) { topicById[t.id] = t; });
 
     var questions = [], idx = 0, results = [], lastIds = [];
 
@@ -1947,9 +1951,9 @@
       var best = bestScore();
       var box = h("div", { class: "qz-intro" });
       var dots = h("ol", { class: "qz-dots", attrs: { "aria-hidden": "true" } });
-      TOPICS.forEach(function () { dots.appendChild(h("li", { class: "qz-dot" })); });
+      topics.forEach(function () { dots.appendChild(h("li", { class: "qz-dot" })); });
       box.appendChild(dots);
-      box.appendChild(h("p", { class: "qz-intro-text", text: "Zehn Fragen, gemischt aus Auswahl- und Rechenfragen. Nimm Papier und Stift dazu. Nach jeder Frage siehst du sofort, ob es stimmt." }));
+      box.appendChild(h("p", { class: "qz-intro-text", text: N + " Fragen, gemischt aus Auswahl- und Rechenfragen. Nimm Papier und Stift dazu. Nach jeder Frage siehst du sofort, ob es stimmt." }));
       if (best !== null) box.appendChild(h("p", { class: "qz-best", html: "Dein Bestwert: <strong>" + best + "/" + N + "</strong>" +
         (best >= PASS ? ' <span class="qz-best-ok">Ziel erreicht</span>' : "") }));
       var go = h("button", { class: "btn btn-primary qz-start", attrs: { type: "button" }, html: 'Quiz starten <span class="arrow" aria-hidden="true">→</span>' });
@@ -1959,7 +1963,7 @@
     }
 
     function start() {
-      questions = sampleQuiz(QUIZ, TOPICS, Math.random, { avoid: lastIds });
+      questions = sampleQuiz(QUIZ, topics, Math.random, { avoid: lastIds });
       lastIds = questions.map(function (q) { return q.id; });
       idx = 0;
       results = [];

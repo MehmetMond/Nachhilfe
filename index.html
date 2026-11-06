@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lagemaße üben: nur die interaktiven Übungen</title>
-<meta name="description" content="Interaktive Lernseite zu den Lagemaßen aus Statistik 1: Modus, Median, Quantile, Boxplot, arithmetisches, getrimmtes, geometrisches und harmonisches Mittel, Schiefe und Übungsblatt 3. Mit Spielplatz, Übungsgenerator und Karteikarten.">
+<meta name="description" content="Interaktive Lernseite zu den Lagemaßen aus Statistik 1: Modus, Median, Quantile, Boxplot, arithmetisches, getrimmtes, geometrisches und harmonisches Mittel, Schiefe. Mit Spielplatz, Übungsgenerator und Karteikarten.">
 <meta name="theme-color" content="#f6f5f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0e12" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317181c'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-style='italic' font-size='36' text-anchor='middle' fill='%235eead4'%3Ex%CC%83%3C/text%3E%3C/svg%3E">
@@ -18,7 +18,6 @@
 <link rel="stylesheet" href="css/widgets/mean.css">
 <link rel="stylesheet" href="css/widgets/more.css">
 <link rel="stylesheet" href="css/widgets/shape.css">
-<link rel="stylesheet" href="css/widgets/uebung.css">
 <link rel="stylesheet" href="css/widgets/playground.css">
 <link rel="stylesheet" href="css/widgets/trainer.css">
 <link rel="stylesheet" href="css/widgets/quiz.css">
@@ -34,7 +33,6 @@
 <script defer src="js/widgets/mean.js"></script>
 <script defer src="js/widgets/more.js"></script>
 <script defer src="js/widgets/shape.js"></script>
-<script defer src="js/widgets/uebung.js"></script>
 <script defer src="js/widgets/playground.js"></script>
 <script defer src="js/widgets/trainer.js"></script>
 <script defer src="js/widgets/quiz.js"></script>
@@ -75,10 +73,9 @@
       <li><a href="#minimum"><span class="no"><span>8</span></span>Minimumeigenschaften</a></li>
       <li><a href="#schiefe"><span class="no"><span>9</span></span>Schiefe</a></li>
       <li><a href="#wahl"><span class="no"><span>10</span></span>Skalenniveau</a></li>
-      <li><a href="#uebung3"><span class="no"><span>11</span></span>Übungsblatt 3</a></li>
-      <li><a href="#spielplatz"><span class="no"><span>12</span></span>Spielplatz</a></li>
-      <li><a href="#trainer"><span class="no"><span>13</span></span>Trainer</a></li>
-      <li><a href="#karten"><span class="no"><span>14</span></span>Karteikarten &amp; Quiz</a></li>
+      <li><a href="#spielplatz"><span class="no"><span>11</span></span>Spielplatz</a></li>
+      <li><a href="#trainer"><span class="no"><span>12</span></span>Trainer</a></li>
+      <li><a href="#karten"><span class="no"><span>13</span></span>Karteikarten &amp; Quiz</a></li>
     </ol>
   </nav>
 
@@ -92,7 +89,6 @@
         <p class="lead">Interaktive Übungen zu Modus, Median, Quantilen, Boxplot, Mittelwerten und Schiefe. Probier alles aus: Werte verschieben, Regler ziehen, selbst rechnen.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="#modus">Los geht’s <span class="arrow" aria-hidden="true">→</span></a>
-          <a class="btn" href="#uebung3">Übungsblatt 3</a>
           <a class="btn" href="#trainer">Trainer</a>
         </div>
       </div>
@@ -295,104 +291,12 @@
     </section>
 
     <!-- ================================================================ 11 ÜBUNG 3 -->
-    <section class="chapter" id="uebung3">
-      <div class="chapter-head">
-        <span class="chapter-no"><b>11</b> Übungsblatt 3</span>
-        <h2>Aufgaben 9 bis 12, Schritt für Schritt</h2>
-      </div>
-      <nav class="measure-chips" aria-label="Aufgaben von Übungsblatt 3">
-        <a class="tag" href="#ue-9">Aufgabe 9: Noten</a>
-        <a class="tag" href="#ue-10">Aufgabe 10: Reaktionszeiten</a>
-        <a class="tag" href="#ue-11">Aufgabe 11: Körpergewicht</a>
-        <a class="tag" href="#ue-12">Aufgabe 12: Lernfortschritt</a>
-      </nav>
-      <div class="prose">
-        <h3 id="ue-9">Aufgabe 9: 100 Klausurnoten</h3>
-        <p>In einer Statistik-Klausur wurden 100 Noten von 1 bis 5 vergeben. Gefragt ist:</p>
-        <ol class="ue-parts">
-          <li><strong>a)</strong> die Häufigkeitsverteilung mit relativen Häufigkeiten und ein Stabdiagramm,</li>
-          <li><strong>b)</strong> die empirische Verteilungsfunktion, berechnet und gezeichnet,</li>
-          <li><strong>c)</strong> Modus, Median und arithmetisches Mittel,</li>
-          <li><strong>d)</strong> das 0,25- und das 0,75-Quantil.</li>
-        </ol>
-        <p class="small muted">Alles erst von Hand, dann mit R kontrollieren. Dazu brauchst du die Häufigkeiten (Folien 41 bis 52) und die Kapitel 2 bis 6 dieser Seite.</p>
-      </div>
-      <div class="grundformel">
-        <p class="gf-title">Grundformeln für Aufgabe 9</p>
-        <div class="formula" data-tex="f_j = \frac{h_j}{n}" data-display></div>
-        <div class="formula" data-tex="F_j = f_1 + f_2 + \ldots + f_j" data-display></div>
-        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{j=1}^{m} h_j \cdot a_j" data-display></div>
-        <div class="formula" data-tex="\bar{x} = \sum_{j=1}^{m} f_j \cdot a_j" data-display></div>
-        <p class="gf-text">n · p keine ganze Zahl: aufrunden auf Platz k</p>
-        <div class="formula" data-tex="\tilde{x}_p = x_{(k)}" data-display></div>
-        <p class="gf-text">n · p = k ist eine ganze Zahl:</p>
-        <div class="formula" data-tex="\tilde{x}_p = \tfrac{1}{2}\left[x_{(k)} + x_{(k+1)}\right]" data-display></div>
-      </div>
-      <div data-widget="ue-a9"></div>
-      <div class="prose">
-        <h3 id="ue-10">Aufgabe 10: Reaktionszeiten aus Aufgabe 8</h3>
-        <p>Es geht wieder um die 60 Reaktionszeiten in Millisekunden aus Aufgabe 8. Alle Berechnungen sollst du mit R machen. Gefragt ist:</p>
-        <ol class="ue-parts">
-          <li><strong>a)</strong> ein Boxplot, von Hand gezeichnet, die Zahlen dafür aus R,</li>
-          <li><strong>b)</strong> Mittel und Median im Vergleich: Wodurch entsteht der Unterschied?</li>
-          <li><strong>c)</strong> ein geeignetes getrimmtes Mittel.</li>
-        </ol>
-      </div>
-      <div class="grundformel">
-        <p class="gf-title">Grundformeln für Aufgabe 10</p>
-        <div class="formula" data-tex="Q_1 = \tilde{x}_{0{,}25} \qquad Q_3 = \tilde{x}_{0{,}75}" data-display></div>
-        <p class="gf-text">Quartilabstand:</p>
-        <div class="formula" data-tex="Q_3 - Q_1" data-display></div>
-        <p class="gf-text">Whisker-Grenzen bei range = 1,5:</p>
-        <div class="formula" data-tex="Q_1 - 1{,}5 \cdot (Q_3 - Q_1)" data-display></div>
-        <div class="formula" data-tex="Q_3 + 1{,}5 \cdot (Q_3 - Q_1)" data-display></div>
-        <div class="formula" data-tex="\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i" data-display></div>
-        <p class="gf-text">k = n · t, abgerundet (t = Anteil je Seite)</p>
-        <div class="formula" data-tex="\bar{x}_t = \frac{1}{n - 2k}\sum_{i=k+1}^{n-k} x_{(i)}" data-display></div>
-      </div>
-      <div data-widget="ue-a10"></div>
-      <div class="prose">
-        <h3 id="ue-11">Aufgabe 11: Körpergewicht von 100 Studenten</h3>
-        <p>Von 100 Studenten ist nur bekannt, wie viele in welche Gewichtsklasse fallen. Gesucht ist näherungsweise das arithmetische Mittel. Das ist genau die Rechnung mit den Klassenmitten von Folie 113.</p>
-      </div>
-      <div class="grundformel">
-        <p class="gf-title">Grundformel für Aufgabe 11</p>
-        <div class="formula" data-tex="\bar{x} \approx \frac{1}{n}\sum_{j=1}^{m} h_j \cdot x&#x27;_j" data-display></div>
-        <p class="gf-text">mit der Klassenmitte</p>
-        <div class="formula" data-tex="x&#x27;_j = \tfrac{1}{2}\,(u_{j-1} + u_j)" data-display></div>
-      </div>
-      <div data-widget="ue-a11"></div>
-      <div class="prose">
-        <h3 id="ue-12">Aufgabe 12: Lernfortschritt</h3>
-        <p>Eine Versuchsperson soll 20 Trigramme wie MIK oder LUR jeweils einer von zwei Antworten zuordnen. Nach jeder Antwort erfährt sie, ob sie richtig war. Es gibt 6 Durchgänge, nummeriert von 0 bis 5. Der Anteil der Fehler <span data-tex="f_i"></span> sinkt dabei so:</p>
-      </div>
-      <div class="table-wrap">
-        <table class="t">
-          <thead><tr><th scope="col">Durchgang <span data-tex="i"></span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
-          <tbody><tr><th scope="row">Fehleranteil <span data-tex="f_i"></span></th><td class="num">0,55</td><td class="num">0,46</td><td class="num">0,35</td><td class="num">0,29</td><td class="num">0,25</td><td class="num">0,21</td></tr></tbody>
-        </table>
-      </div>
-      <div class="prose">
-        <p>Der Lernfortschritt ist das Verhältnis <span data-tex="x_i = f_i \div f_{i-1}"></span> für <span data-tex="i = 1, \dots, 5"></span>. Gefragt ist:</p>
-        <ol class="ue-parts">
-          <li><strong>a)</strong> ein geeignetes Maß für den mittleren Lernfortschritt,</li>
-          <li><strong>b)</strong> welche Fehleranteile für die Durchgänge 1 bis 5 vorhergesagt werden, wenn der Lernfortschritt konstant ist und man vom beobachteten <span data-tex="f_0 = 0{,}55"></span> ausgeht.</li>
-        </ol>
-      </div>
-      <div class="grundformel">
-        <p class="gf-title">Grundformeln für Aufgabe 12</p>
-        <div class="formula" data-tex="x_i = \frac{f_i}{f_{i-1}}" data-display></div>
-        <div class="formula" data-tex="GM = \sqrt[n]{x_1 \cdot x_2 \cdot \ldots \cdot x_n}" data-display></div>
-        <p class="gf-text">nur für Werte größer als 0</p>
-        <div class="formula" data-tex="\hat{f}_i = f_0 \cdot GM^{\,i}" data-display></div>
-      </div>
-      <div data-widget="ue-a12"></div>
-    </section>
+    
 
     <!-- ================================================================ 12 SPIELPLATZ -->
     <section class="chapter" id="spielplatz">
       <div class="chapter-head">
-        <span class="chapter-no"><b>12</b> Spielplatz</span>
+        <span class="chapter-no"><b>11</b> Spielplatz</span>
         <h2>Deine eigenen Daten</h2>
       </div>
       <div data-widget="playground"></div>
@@ -401,7 +305,7 @@
     <!-- ================================================================ 13 TRAINER -->
     <section class="chapter" id="trainer">
       <div class="chapter-head">
-        <span class="chapter-no"><b>13</b> Trainer</span>
+        <span class="chapter-no"><b>12</b> Trainer</span>
         <h2>Üben, bis es sitzt</h2>
       </div>
       <div data-widget="trainer"></div>
@@ -410,7 +314,7 @@
     <!-- ================================================================ 14 KARTEN -->
     <section class="chapter" id="karten">
       <div class="chapter-head">
-        <span class="chapter-no"><b>14</b> Wiederholen</span>
+        <span class="chapter-no"><b>13</b> Wiederholen</span>
         <h2>Karteikarten und Abschlussquiz</h2>
       </div>
       <div data-widget="flashcards"></div>
@@ -425,7 +329,7 @@
 
 <footer class="site-foot">
   <div class="inner">
-    <p><strong>Inoffizielle Lernhilfe</strong> zu den Lagemaßen aus Statistik 1 (Folien 90–125 und 133–142, Übungsblatt 3, WS 2026/27). Keine offizielle Seite einer Universität. Alle Rechenregeln folgen den Folien, insbesondere die Quantil-Regel von Folie 101.</p>
+    <p><strong>Inoffizielle Lernhilfe</strong> zu den Lagemaßen aus Statistik 1 (Folien 90–125 und 133–142, WS 2026/27). Keine offizielle Seite einer Universität. Alle Rechenregeln folgen den Folien, insbesondere die Quantil-Regel von Folie 101.</p>
     <p>Dein Fortschritt bleibt nur in diesem Browser gespeichert.</p>
   </div>
 </footer>
