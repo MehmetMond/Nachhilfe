@@ -654,15 +654,10 @@
     var whyBox = LM.h("p", { class: "sh-why", text: "Warum klappt das? Das Mittel ist der Schwerpunkt der Werte. Strecken (mal p) und Verschieben (plus q) machen mit dem Schwerpunkt genau dasselbe wie mit jedem einzelnen Wert." });
     var zeroBox = LM.h("div", { class: "sh-zero", attrs: { hidden: "" } });
     var out = LM.h("div", { class: "w-out sh-lt-out" }, [formulaBox, probeBox, zeroBox, whyBox]);
-    var extraBody = LM.h("p", { class: "sh-extra-body" });
-    var extra = LM.h("div", { class: "callout callout-extra sh-extra" }, [
-      LM.h("p", { class: "callout-title", text: "Extra: Diese Regel für den Median steht nicht auf den Folien" }),
-      extraBody
-    ]);
     var sr = LM.h("p", { class: "sh-sr", attrs: { role: "status", "aria-live": "polite" } });
 
     var figure = LM.h("div", { class: "sh-figure" }, [chart, cap]);
-    [head, controls, rule, figure, tableWrap, out, extra, sr].forEach(function (c) { el.appendChild(c); });
+    [head, controls, rule, figure, tableWrap, out, sr].forEach(function (c) { el.appendChild(c); });
 
     /* ---- Hervorheben eines Wertes (Tabelle oder Punkt) ---- */
     function setHl(i) {
@@ -790,15 +785,6 @@
         zeroBox.hidden = true;
         zeroBox.innerHTML = "";
       }
-
-      var even = info.n % 2 === 0;
-      extraBody.innerHTML = "Auch der <span class=\"t-med\"><strong>Median</strong></span> wandert nach derselben Regel mit: " +
-        LM.tex("\\tilde{x} = " + texNum(info.xMed, 2) + " \\;\\Rightarrow\\; \\tilde{y} = " + texPar(info.p, 2) + " \\cdot " + texPar(info.xMed, 2) +
-          (info.q >= 0 ? " + " + texNum(info.q, 2) : " - " + texNum(-info.q, 2)) +
-          ((isRounded(info.yMedFormula, 2) || isRounded(info.xMed, 2) || isRounded(info.q, 2)) ? " \\approx " : " = ") + texNum(info.yMedFormula, 2)) +
-        ". Nachgezählt: Der Median der y-Werte ist " + fmt(info.yMed, 2) + (info.medOk ? " ✓" : "") + ". " +
-        (info.p < 0 ? "Bei negativem p dreht sich die Reihenfolge um, aber der mittlere Wert bleibt der mittlere. " : "") +
-        (even ? "Bei gerader Anzahl ist der Median das Mittel der beiden mittleren Werte; das wandert genauso mit." : "");
 
       renderTable(info, u);
       chart.setAttribute("aria-label", "Zwei Zahlengeraden. Oben die x-Werte " + info.xs.map(function (v) { return fmt(v, 2); }).join(", ") +
